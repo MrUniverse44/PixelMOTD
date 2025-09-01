@@ -6,29 +6,29 @@ jobs:
   upload:
    
     runs-on: ubuntu-latest
-    if: "!contains(github.event.commits[0].message, '[ac-skip]')"
+    if: ${{ !contains(github.event.commits[0].message, '[ac-skip]') }}
     
     steps:
      - name: Checkout 🙃
        uses: actions/checkout@v3
        
-     - name: Set up JDK 8 🛠
-       uses: actions/setup-java@v3
+     - name: Set up JDK 21 🛠
+       uses: actions/setup-java@v4
        with:
-        java-version: '8'
-        distribution: 'temurin'
-        cache: maven
+         distribution: 'temurin' # See 'Supported distributions' for available options
+         java-version: '21'
+         cache: maven
         
-     - name: Setup Maven 3.8.6 🔮
-       uses: stCarolas/setup-maven@v4.3
+     - name: Setup Maven 3.8.8 🔮
+       uses: stCarolas/setup-maven@v5
        with:
-        maven-version: 3.8.6
+        maven-version: 3.8.8
         
      - name: Build Jar files 📎
        run: mvn package
        
      - name: Upload files ☁
-       uses: actions/upload-artifact@v3
+       uses: actions/upload-artifact@v4
        with:
         name: PixelMOTD Plugin
         path: ./target/PixelMOTD*
