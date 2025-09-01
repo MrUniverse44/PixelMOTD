@@ -170,7 +170,7 @@ public abstract class PingBuilder<T, I, E, H> {
         return motdList;
     }
 
-    public CachedMotd fetchMotd(MotdType type, int protocol) {
+    public CachedMotd fetchMotd(MotdType type, int protocol, String domain) {
         List<CachedMotd> motds;
 
         if (separated && protocol >= 735) {
@@ -183,30 +183,42 @@ public abstract class PingBuilder<T, I, E, H> {
             motds = loadMotds(type);
         }
 
-        if (motds.size() == 0) {
-            if (type == MotdType.OUTDATED_CLIENT && (motdStorage.get(type).size() == 0 || (separated && hexStorage.get(type).size() == 0))) {
-                return fetchMotd(MotdType.NORMAL, protocol);
+        if (motds.isEmpty()) {
+            if (type == MotdType.OUTDATED_CLIENT && (motdStorage.get(type).isEmpty() || (separated && hexStorage.get(type).isEmpty()))) {
+                return fetchMotd(MotdType.NORMAL, protocol, domain);
             }
-            if (type == MotdType.OUTDATED_SERVER && (motdStorage.get(type).size() == 0 || (separated && hexStorage.get(type).size() == 0))) {
-                return fetchMotd(MotdType.NORMAL, protocol);
+            if (type == MotdType.OUTDATED_SERVER && (motdStorage.get(type).isEmpty() || (separated && hexStorage.get(type).isEmpty()))) {
+                return fetchMotd(MotdType.NORMAL, protocol, domain);
             }
             return null;
         }
 
         if (motds.size() == 1) {
-            return motds.get(0);
+            return motds.getFirst();
         }
 
-        return motds.get(
+        if (domain.isEmpty()) {
+            return motds.get(
                 ThreadLocalRandom.current().nextInt(motds.size())
-        );
+            );
+        } else {
+            return motds.stream()
+                .filter(motd -> motd.isDomainAccepted(domain))
+                .findAny()
+                .orElse(null);
+        }
     }
 
     public SlimeLogs getLogs() {
         return plugin.getLogs();
     }
 
-    public abstract void execute(MotdType motdType, E ping, int code, String user);
+    public abstract void execute(MotdType motdType, E ping, int code, String user, String domain);
+
+    @Deprecated
+    public void execute(MotdType motdType, E ping, int code, String user) {
+        execute(motdType, ping, code, user, "");
+    }
 
     public PixelMOTD<T> getPlugin() {
         return plugin;

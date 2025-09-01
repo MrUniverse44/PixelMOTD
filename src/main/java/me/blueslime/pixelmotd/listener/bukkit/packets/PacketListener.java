@@ -101,6 +101,7 @@ public class PacketListener extends BukkitPacketPluginListener implements Ping {
 
         InetSocketAddress socketAddress = null;
 
+
         if (event.getPlayer() != null) {
             socketAddress = event.getPlayer().getAddress();
         }
@@ -124,25 +125,25 @@ public class PacketListener extends BukkitPacketPluginListener implements Ping {
         }
 
         if (isBlacklisted && getBlacklist().getStringList("players.by-name").contains(user)) {
-            builder.execute(MotdType.BLACKLIST, event, protocol, user);
+            builder.execute(MotdType.BLACKLIST, event, protocol, user, "");
             return;
         }
 
         if (isWhitelisted) {
-            builder.execute(MotdType.WHITELIST, event, protocol, user);
+            builder.execute(MotdType.WHITELIST, event, protocol, user, "");
             return;
         }
 
         if (!hasOutdatedClient && !hasOutdatedServer || protocol >= MIN_PROTOCOL && protocol <= MAX_PROTOCOL) {
-            builder.execute(MotdType.NORMAL, event, protocol, user);
+            builder.execute(MotdType.NORMAL, event, protocol, user, "");
             return;
         }
         if (MAX_PROTOCOL < protocol && hasOutdatedServer) {
-            builder.execute(MotdType.OUTDATED_SERVER, event, protocol, user);
+            builder.execute(MotdType.OUTDATED_SERVER, event, protocol, user, "");
             return;
         }
         if (MIN_PROTOCOL > protocol && hasOutdatedClient) {
-            builder.execute(MotdType.OUTDATED_CLIENT, event, protocol, user);
+            builder.execute(MotdType.OUTDATED_CLIENT, event, protocol, user, "");
         }
     }
 

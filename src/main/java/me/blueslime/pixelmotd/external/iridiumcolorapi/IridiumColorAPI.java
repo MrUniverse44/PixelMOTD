@@ -6,7 +6,7 @@ import me.blueslime.pixelmotd.external.iridiumcolorapi.patterns.IridiumPattern;
 import me.blueslime.pixelmotd.external.iridiumcolorapi.patterns.RainbowPattern;
 import me.blueslime.pixelmotd.external.iridiumcolorapi.patterns.SolidPattern;
 import net.md_5.bungee.api.ChatColor;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
@@ -230,6 +230,7 @@ public class IridiumColorAPI {
      */
     @NotNull
     private static ChatColor[] createGradient(@NotNull Color start, @NotNull Color end, int step) {
+        step = Math.max(step, 2);
         ChatColor[] colors = new ChatColor[step];
         int stepR = Math.abs(start.getRed() - end.getRed()) / (step - 1);
         int stepG = Math.abs(start.getGreen() - end.getGreen()) / (step - 1);

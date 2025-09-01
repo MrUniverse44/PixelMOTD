@@ -32,7 +32,7 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
     }
 
     @Override
-    public void execute(MotdType motdType, PacketEvent event, int code, String user) {
+    public void execute(MotdType motdType, PacketEvent event, int code, String user, String domain) {
         int index = 0;
         WrappedServerPing ping = event.getPacket().getServerPings().read(index);
 
@@ -43,7 +43,7 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
             return;
         }
 
-        CachedMotd motd = fetchMotd(motdType, code);
+        CachedMotd motd = fetchMotd(motdType, code, "");
 
         if (motd == null) {
             if (isDebug()) {

@@ -4,12 +4,12 @@
 # ██─▄▄▄██─███▀─▀███─▄█▀██─██▀██─█▄█─██─██─███─████─██─████ ██─██─█  █─██─█
 # █▄▄▄███▄▄▄█▄▄█▄▄█▄▄▄▄▄█▄▄▄▄▄█▄▄▄█▄▄▄█▄▄▄▄██▄▄▄██▄▄▄▄████▄▄▄█▄▄▄▄█▄▄█▄▄▄▄█
 #
-# Using version: 9.4.1-SNAPSHOT (System originally created for PixelMOTD 10 moved to the Legacy version) by JustJustin
+# Using version: 9.5-SNAPSHOT (System originally created for PixelMOTD 10 moved to the Legacy version) by JustJustin
 #
 # Links:
 # * SpigotMC Link: https://www.spigotmc.org/resources/37177/
-# * MC-Market Link: https://www.mc-market.org/resources/22313/
-# * GitHub Link: https://github.com/ShieldCommunity/PixelMOTD
+# * MC-Market Link: https://builtbybit.com/resources/22313/
+# * GitHub Link: https://github.com/MrUniverse44/LegacyPixelMOTD/
 #
 # Tutorials:
 # * If you want to add Hex or Gradient, Click here: (tutorial link for hex here in the future)
@@ -17,20 +17,20 @@
 
 # Configurable Motd Types:
 # * 0 = Normal (Default)
-# * 1 = Whitelist
-# * 2 = Blacklist
+# * 1 = WhiteList
+# * 2 = BlackList
 # * 3 = OutdatedClient
 # * 4 = OutdatedServer
 type: 3
 
 # Disabled until 10.0.0
-# This path will be only if you are in type = 7, for the Domain Motd.
 # This path will be the domain to check if the player is using a specified domain
 domain-setup:
   # This option has two types: 0 = IS, 1 = IS_NOT
   # 0 - IS = If the player is calling the server motd using a specified domain.
   # 1 - IS_NOT = If the player is not calling the server motd using a specified domain.
-  type: 1
+  # -1 = Disabled
+  type: -1
   # Domains to check this setup, add more using ',' as a separator. Please don't use spaces.
   value: "mc.spigot.org,play.spigot.org"
 

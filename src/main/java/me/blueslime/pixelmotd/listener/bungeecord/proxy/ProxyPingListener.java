@@ -16,6 +16,7 @@ import net.md_5.bungee.api.event.ProxyPingEvent;
 import net.md_5.bungee.api.plugin.Cancellable;
 import net.md_5.bungee.event.EventHandler;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 public class ProxyPingListener extends BungeePluginListener implements Ping {
@@ -107,26 +108,29 @@ public class ProxyPingListener extends BungeePluginListener implements Ping {
                 address.toString(), unknown
         );
 
+        InetSocketAddress virtualHost = event.getConnection().getVirtualHost();
+        String playerDomain = virtualHost.getHostString();
+
         if (isBlacklisted && getBlacklist().getStringList("players.by-name").contains(userName)) {
-            builder.execute(MotdType.BLACKLIST, ping, protocol, userName);
+            builder.execute(MotdType.BLACKLIST, ping, protocol, userName, playerDomain);
             return;
         }
 
         if (isWhitelisted) {
-            builder.execute(MotdType.WHITELIST, ping, protocol, userName);
+            builder.execute(MotdType.WHITELIST, ping, protocol, userName, playerDomain);
             return;
         }
 
         if (!hasOutdatedClient && !hasOutdatedServer || protocol >= MIN_PROTOCOL && protocol <= MAX_PROTOCOL) {
-            builder.execute(MotdType.NORMAL, ping, protocol, userName);
+            builder.execute(MotdType.NORMAL, ping, protocol, userName, playerDomain);
             return;
         }
         if (MAX_PROTOCOL < protocol && hasOutdatedServer) {
-            builder.execute(MotdType.OUTDATED_SERVER, ping, protocol, userName);
+            builder.execute(MotdType.OUTDATED_SERVER, ping, protocol, userName, playerDomain);
             return;
         }
         if (MIN_PROTOCOL > protocol && hasOutdatedClient) {
-            builder.execute(MotdType.OUTDATED_CLIENT, ping, protocol, userName);
+            builder.execute(MotdType.OUTDATED_CLIENT, ping, protocol, userName, playerDomain);
         }
     }
 

@@ -18,6 +18,7 @@ import me.blueslime.pixelmotd.motd.platforms.VelocityPing;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Optional;
 
 public class ProxyPingListener extends VelocityPluginListener implements Ping {
 
@@ -95,6 +96,14 @@ public class ProxyPingListener extends VelocityPluginListener implements Ping {
 
         InetSocketAddress socketAddress = connection.getRemoteAddress();
 
+        String domain = "";
+
+        Optional<InetSocketAddress> virtualOptional = connection.getVirtualHost();
+
+        if (virtualOptional.isPresent()) {
+            domain = virtualOptional.get().getHostName();
+        }
+
         if (socketAddress != null) {
             InetAddress address = socketAddress.getAddress();
 
@@ -104,25 +113,25 @@ public class ProxyPingListener extends VelocityPluginListener implements Ping {
         }
 
         if (isBlacklisted && getBlacklist().getStringList("players.by-name").contains(user)) {
-            builder.execute(MotdType.BLACKLIST, event, protocol, user);
+            builder.execute(MotdType.BLACKLIST, event, protocol, user, domain);
             return;
         }
 
         if (isWhitelisted) {
-            builder.execute(MotdType.WHITELIST, event, protocol, user);
+            builder.execute(MotdType.WHITELIST, event, protocol, user, domain);
             return;
         }
 
         if (!hasOutdatedClient && !hasOutdatedServer || protocol >= MIN_PROTOCOL && protocol <= MAX_PROTOCOL) {
-            builder.execute(MotdType.NORMAL, event, protocol, user);
+            builder.execute(MotdType.NORMAL, event, protocol, user, domain);
             return;
         }
         if (MAX_PROTOCOL < protocol && hasOutdatedServer) {
-            builder.execute(MotdType.OUTDATED_SERVER, event, protocol, user);
+            builder.execute(MotdType.OUTDATED_SERVER, event, protocol, user, domain);
             return;
         }
         if (MIN_PROTOCOL > protocol && hasOutdatedClient) {
-            builder.execute(MotdType.OUTDATED_CLIENT, event, protocol, user);
+            builder.execute(MotdType.OUTDATED_CLIENT, event, protocol, user, domain);
         }
     }
 

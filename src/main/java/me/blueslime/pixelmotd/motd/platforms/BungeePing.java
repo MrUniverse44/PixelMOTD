@@ -28,12 +28,12 @@ public class BungeePing extends PingBuilder<Plugin, Favicon, ServerPing, ServerP
     }
 
     @Override
-    public void execute(MotdType motdType, ServerPing ping, int code, String user) {
-        CachedMotd motd = fetchMotd(motdType, code);
+    public void execute(MotdType motdType, ServerPing ping, int code, String user, String domain) {
+        CachedMotd motd = fetchMotd(motdType, code, domain);
 
         if (motd == null) {
             if (isDebug()) {
-                getLogs().debug("The plugin don't detect motds for MotdType: " + motdType);
+                getLogs().debug("The plugin don't detect motds for MotdType: " + motdType + " or for domain: " + domain);
             }
             return;
         }

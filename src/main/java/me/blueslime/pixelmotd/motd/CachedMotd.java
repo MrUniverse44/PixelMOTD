@@ -5,16 +5,16 @@ import me.blueslime.slimelib.file.configuration.TextDecoration;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.utils.internal.players.PlayerModules;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class CachedMotd {
     private final ConfigurationHandler configuration;
     private MotdProtocol specifiedProtocol;
     private String protocol;
+
+    private final HashSet<String> validDomains = new HashSet<>();
+    private int domainType;
 
     public CachedMotd(ConfigurationHandler configuration) {
         this.configuration = configuration;
@@ -26,6 +26,12 @@ public class CachedMotd {
                 configuration.get("protocol.modifier", "1"),
                 0
         );
+
+        this.domainType = configuration.getInt("domain-setup.type", -1);
+        if (this.domainType != -1) {
+            String domainValue = configuration.getString("domain-setup.value", "");
+            this.validDomains.addAll(Arrays.asList(domainValue.split(",")));
+        }
 
         this.protocol = configuration.getString("protocol.text", "&fPlayers: &a%online%/1000");
 
@@ -74,6 +80,20 @@ public class CachedMotd {
 
     public String getProtocolText() {
         return protocol;
+    }
+
+    public boolean isDomainAccepted(String domain) {
+        if (domain == null || domain.isEmpty()) {
+            return true;
+        }
+
+        if (domainType == -1) {
+            return true;
+        }
+
+        boolean contains =  validDomains.contains(domain);
+
+        return (domainType == 0 && contains) || (domainType == 1 && !contains);
     }
 
     public boolean hasHover() {

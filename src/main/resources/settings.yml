@@ -4,12 +4,12 @@
 # ██─▄▄▄██─███▀─▀███─▄█▀██─██▀██─█▄█─██─██─███─████─██─████ ██─██─█  █─██─█
 # █▄▄▄███▄▄▄█▄▄█▄▄█▄▄▄▄▄█▄▄▄▄▄█▄▄▄█▄▄▄█▄▄▄▄██▄▄▄██▄▄▄▄████▄▄▄█▄▄▄▄█▄▄█▄▄▄▄█
 #
-# Using version: 9.4.1-SNAPSHOT (System originally created for PixelMOTD 10 moved to the Legacy version) by JustJustin
+# Using version: 9.5-SNAPSHOT (System originally created for PixelMOTD 10 moved to the Legacy version) by JustJustin
 #
 #   Author: JustJustin (MrUniverse44)
 #   SpigotMC Link: https://www.spigotmc.org/resources/37177/
-#   MC-Market Link: https://www.mc-market.org/resources/22313/
-#   GitHub Link: https://github.com/ShieldCommunity/PixelMOTD
+#   MC-Market Link: https://builtbybit.com/resources/22313/
+#   GitHub Link: https://github.com/MrUniverse44/LegacyPixelMOTD/
 #
 settings:
   # Configuration version to prevent issues
@@ -26,6 +26,8 @@ settings:
   # Usage: %<prefix>_<key>%
   # Example: %custom_online_exampleName%, %custom_online_exampleContains%
   online-variables:
+    # Cache values in a specified time, this could accelerate the motd loading, 1000 = 1 second
+    cache-expire-ms: 4000
     # Toggle this option, without this option the motd will load faster
     enabled: true
     # The prefix for the variable. (%custom_online_<id>%)

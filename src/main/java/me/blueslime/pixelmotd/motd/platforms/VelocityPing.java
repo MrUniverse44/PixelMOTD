@@ -30,10 +30,10 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
     }
 
     @Override
-    public void execute(MotdType motdType, ProxyPingEvent event, int code, String user) {
+    public void execute(MotdType motdType, ProxyPingEvent event, int code, String user, String domain) {
         ServerPing.Builder ping = event.getPing().asBuilder();
 
-        CachedMotd motd = fetchMotd(motdType, code);
+        CachedMotd motd = fetchMotd(motdType, code, domain);
 
         if (motd == null) {
             if (isDebug()) {

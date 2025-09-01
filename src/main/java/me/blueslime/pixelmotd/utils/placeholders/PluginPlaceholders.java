@@ -1,5 +1,6 @@
 package me.blueslime.pixelmotd.utils.placeholders;
 
+import com.google.common.cache.Cache;
 import me.blueslime.pixelmotd.Configuration;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.initialization.bungeecord.BungeeMOTD;
@@ -11,12 +12,12 @@ import me.blueslime.pixelmotd.status.StatusChecker;
 import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
 import me.blueslime.slimelib.file.configuration.TextDecoration;
 import me.blueslime.pixelmotd.utils.OnlineList;
-import me.blueslime.pixelmotd.utils.internal.events.EventFormatEnum;
 import me.blueslime.pixelmotd.utils.internal.storage.PluginStorage;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +26,8 @@ public class PluginPlaceholders {
 
     private final PluginStorage<String, List<String>> serversMap = PluginStorage.initAsConcurrentHash();
     private final PluginStorage<String, OnlineList> onlineMap = PluginStorage.initAsConcurrentHash();
+    private final Map<String, CachedValue> onlineCache = new ConcurrentHashMap<>();
+    private final Map<String, CachedValue> formatCache = new ConcurrentHashMap<>();
     private final static Pattern PLAYER_PATTERN = Pattern.compile("%player_(\\d)+%");
     private final boolean IS_VELOCITY_PLATFORM;
     private final boolean IS_BUNGEE_PLATFORM;
@@ -79,13 +82,13 @@ public class PluginPlaceholders {
 
         return replaceServers(
                 message.replace("%online%", "" + plugin.getPlayerHandler().getPlayersSize())
-                        .replace("%max%","" + this.max)
-                        .replace("%fake_online%", "" + online)
-                        .replace("%plugin_author%", "MrUniverse44")
-                        .replace("%whitelist_author%", getWhitelistAuthor())
-                        .replace("%user%", username)
-                        .replace("%fake_max%", "" + max)
-                        .replace("[box]", "▇")
+                .replace("%max%","" + this.max)
+                .replace("%fake_online%", "" + online)
+                .replace("%plugin_author%", "MrUniverse44")
+                .replace("%whitelist_author%", getWhitelistAuthor())
+                .replace("%user%", username)
+                .replace("%fake_max%", "" + max)
+                .replace("[box]", "▇")
         );
     }
 
@@ -96,14 +99,37 @@ public class PluginPlaceholders {
                 List<Server> serverList = plugin.getServerHandler().getServers();
 
                 for (String key : onlineMap.getKeys()) {
-                    int online = 0;
+                    int online;
 
-                    switch (onlineMap.get(key)) {
-                        case NAME:
-                            online = getOnlineByNames(serverList, serversMap.get(key));
-                            break;
-                        case CONTAINS:
-                            online = getOnlineByContains(serverList, serversMap.get(key));
+                    if (onlineCache.containsKey(key)) {
+                        CachedValue cachedValue = onlineCache.get(key);
+                        if (!cachedValue.isExpired()) {
+                            online = cachedValue.asIntValue();
+                        } else {
+                            online = switch (onlineMap.get(key)) {
+                                case NAME -> getOnlineByNames(serverList, serversMap.get(key));
+                                case CONTAINS -> getOnlineByContains(serverList, serversMap.get(key));
+                            };
+                            onlineCache.put(
+                                key,
+                                new CachedValue(
+                                    online,
+                                    plugin.getSettings().getLong("settings.online-variables.cache-expire-ms", 4000)
+                                )
+                            );
+                        }
+                    } else {
+                        online = switch (onlineMap.get(key)) {
+                            case NAME -> getOnlineByNames(serverList, serversMap.get(key));
+                            case CONTAINS -> getOnlineByContains(serverList, serversMap.get(key));
+                        };
+                        onlineCache.put(
+                            key,
+                            new CachedValue(
+                                online,
+                                plugin.getSettings().getLong("settings.online-variables.cache-expire-ms", 4000)
+                            )
+                        );
                     }
 
                     message = message.replace("%" + prefix + "_" + key + "%", "" + online);
@@ -140,252 +166,156 @@ public class PluginPlaceholders {
     private String replaceEvents(String message) {
         ConfigurationHandler events = plugin.getConfiguration(Configuration.EVENTS);
 
-        if (events.getStatus("events-toggle", false)) {
-            if (message.contains("%event_")) {
-                Date currentDate = new Date();
-                for (String event : events.getContent("events", false)) {
+        if (events.getBoolean("enabled", false)) {
+            Pattern eventPattern = Pattern.compile("%event_([a-zA-Z0-9]+)_(name|timezone|timeleft|left)%", Pattern.CASE_INSENSITIVE);
+            Matcher eventMatcher = eventPattern.matcher(message);
+            StringBuilder resultMessage = new StringBuilder();
 
-                    String timeLeft;
+            while (eventMatcher.find()) {
+                String eventName = eventMatcher.group(1);
+                String placeholder = eventMatcher.group(2).toLowerCase(Locale.ENGLISH);
 
-                    Date date = getSpecifiedEvent(events, event);
+                String path = "events." + eventName + ".";
+                String eventNameValue = events.getString(path + "name", "Example Event 001");
+                String timeZoneValue = events.getString(path + "time-zone", "12/21/24 23:59:00");
+                Date date = getSpecifiedEvent(events, eventName);
 
-                    if (date == null) {
-                        continue;
-                    }
+                String replacement = eventMatcher.group(0);
 
-                    long difference = date.getTime() - currentDate.getTime();
-
-                    String path = "events." + event + ".";
-
-                    EventFormatEnum format = EventFormatEnum.fromText(events.getString(path + "format-type", "FIRST"));
-
+                if ("name".equals(placeholder)) {
+                    replacement = eventNameValue;
+                } else if ("timezone".equals(placeholder)) {
+                    replacement = timeZoneValue;
+                } else if (("timeleft".equals(placeholder) || "left".equals(placeholder)) && date != null) {
+                    long difference = date.getTime() - new Date().getTime();
                     if (difference >= 0L) {
-                        timeLeft = replaceEvent(
-                                format,
-                                events,
-                                difference
-                        );
+                        String formatName = events.getString(path + "display-format", "digital");
+                        replacement = formatEventTime(eventName, formatName, events, difference);
                     } else {
-                        timeLeft = events.getString(
-                                TextDecoration.LEGACY,
-                                path + "end-message",
-                                "&cThe event finished."
-                        );
+                        replacement = events.getString(TextDecoration.LEGACY, path + "end-message", "&cThe event finished.");
                     }
-
-                    String simplifiedPrefix = "%event_" + event + "_";
-
-                    String zone = events.getString(path + "time-zone", "12/21/24 23:59:00");
-                    String name = events.getString(path + "name", "Example Event 001");
-
-                    message = message.replace(
-                            simplifiedPrefix + "name%", name
-                    ).replace(
-                            simplifiedPrefix + "Name%", name
-                    ).replace(
-                            simplifiedPrefix + "TimeZone%", zone
-                    ).replace(
-                            simplifiedPrefix + "timeZone%" , zone
-                    ).replace(
-                            simplifiedPrefix + "Timezone", zone
-                    ).replace(
-                            simplifiedPrefix + "timezone%", zone
-                    ).replace(
-                            simplifiedPrefix + "TimeLeft%", timeLeft
-                    ).replace(
-                            simplifiedPrefix + "timeLeft%", timeLeft
-                    ).replace(
-                            simplifiedPrefix + "timeleft%", timeLeft
-                    ).replace(
-                            simplifiedPrefix + "Timeleft%", timeLeft
-                    ).replace(
-                            simplifiedPrefix + "left%", timeLeft
-                    );
                 }
+                eventMatcher.appendReplacement(resultMessage, Matcher.quoteReplacement(replacement));
             }
-            return message;
+            eventMatcher.appendTail(resultMessage);
+            return resultMessage.toString();
         }
         return message;
     }
 
-    //BIG MENTAL SKILL ISSUE
-    private String replaceEvent(EventFormatEnum format, ConfigurationHandler events, long time) {
+    private String formatEventTime(String eventName, String formatName, ConfigurationHandler events, long time) {
+        String cacheKey = eventName + ":" + formatName;
+        CachedValue cachedValue = formatCache.get(cacheKey);
 
-        String separator = events.getString("timer.separator", ",");
-
-        StringJoiner joiner = new StringJoiner("");
-
-        String prefix;
-
-        long seconds;
-
-        int number;
-
-
-        switch (format) {
-            case FIRST:
-                seconds = time / 1000;
-
-                number = math(seconds, TimeUnit.DAYS, 7);
-                if (number > 0) {
-                    seconds %= TimeUnit.DAYS.toSeconds(7);
-
-                    if (number == 1) {
-                        prefix = events.getString("timer.week", "week");
-                    } else {
-                        prefix = events.getString("timer.weeks", "weeks");
-                    }
-
-                    joiner.add(number + " " + prefix);
-                }
-
-                number = math(seconds, TimeUnit.DAYS, 1);
-                if (number > 0) {
-                    seconds %= TimeUnit.DAYS.toSeconds(1);
-
-                    if (number == 1) {
-                        prefix = events.getString("timer.day", "day");
-                    } else {
-                        prefix = events.getString("timer.days", "days");
-                    }
-
-                    joiner.add(number + " " + prefix);
-                }
-
-                number = math(seconds, TimeUnit.HOURS, 1);
-                if (number > 0) {
-                    seconds %= TimeUnit.HOURS.toSeconds(1);
-
-                    if (number == 1) {
-                        prefix = events.getString("timer.hour", "hour");
-                    } else {
-                        prefix = events.getString("timer.hours", "hours");
-                    }
-
-                    joiner.add(number + " " + prefix);
-                }
-
-                number = math(seconds, TimeUnit.MINUTES, 1);
-                if (number > 0) {
-                    seconds %= TimeUnit.MINUTES.toSeconds(1);
-
-                    if (number == 1) {
-                        prefix = events.getString("timer.minute", "minute");
-                    } else {
-                        prefix = events.getString("timer.minutes", "minutes");
-                    }
-
-                    joiner.add(number + " " + prefix);
-                }
-
-                number = math(seconds, TimeUnit.SECONDS, 1);
-                if (seconds > 0 || joiner.length() == 0) {
-                    seconds %= TimeUnit.SECONDS.toSeconds(1);
-                    if (number == 1) {
-                        prefix = events.getString("timer.second", "second");
-                    } else {
-                        prefix = events.getString("timer.seconds", "seconds");
-                    }
-
-                    joiner.add(number + " " + prefix);
-                }
-                return joiner.toString();
-            case SECOND:
-                seconds = time / 1000;
-
-                number = math(seconds, TimeUnit.DAYS, 7);
-                if (number > 0) {
-                    seconds %= TimeUnit.DAYS.toSeconds(7);
-                    joiner.add(number + ":");
-                }
-
-                number = math(seconds, TimeUnit.DAYS, 1);
-                if (number > 0) {
-                    seconds %= TimeUnit.DAYS.toSeconds(1);
-                    joiner.add(number + ":");
-                }
-
-                number = math(seconds, TimeUnit.HOURS, 1);
-                if (number > 0) {
-                    seconds %= TimeUnit.HOURS.toSeconds(1);
-                    joiner.add(number + ":");
-                }
-
-                number = math(seconds, TimeUnit.MINUTES, 1);
-                if (number > 0) {
-                    seconds %= TimeUnit.MINUTES.toSeconds(1);
-                    joiner.add(number + ":");
-                }
-
-                number = math(seconds, TimeUnit.SECONDS, 1);
-                if (seconds > 0 || joiner.length() == 0) {
-                    seconds %= TimeUnit.SECONDS.toSeconds(1);
-                    joiner.add(number + "");
-                }
-                return joiner.toString().replace(" ", "");
-            case THIRD:
-                seconds = time / 1000;
-
-                number = math(seconds, TimeUnit.DAYS, 7);
-                if (number > 0) {
-                    seconds %= TimeUnit.DAYS.toSeconds(7);
-
-                    prefix = events.getString("timer.w", "w");
-
-                    joiner.add(number + prefix + separator);
-                }
-
-                number = math(seconds, TimeUnit.DAYS, 1);
-                if (number > 0) {
-                    seconds %= TimeUnit.DAYS.toSeconds(1);
-
-                    prefix = events.getString("timer.d", "d");
-
-                    joiner.add(number + prefix + separator);
-                }
-
-                number = math(seconds, TimeUnit.HOURS, 1);
-                if (number > 0) {
-                    seconds %= TimeUnit.HOURS.toSeconds(1);
-
-                    prefix = events.getString("timer.h", "h");
-
-                    joiner.add(number + prefix + separator);
-                }
-
-                number = math(seconds, TimeUnit.MINUTES, 1);
-                if (number > 0) {
-                    seconds %= TimeUnit.MINUTES.toSeconds(1);
-
-                    prefix = events.getString("timer.m", "m");
-
-                    joiner.add(number + prefix + separator);
-                }
-
-                number = math(seconds, TimeUnit.SECONDS, 1);
-                if (seconds > 0 || joiner.length() == 0) {
-                    seconds %= TimeUnit.SECONDS.toSeconds(1);
-
-                    prefix = events.getString("timer.s", "s");
-
-                    joiner.add(number + prefix);
-                }
-                return joiner.toString();
+        if (cachedValue != null && !cachedValue.isExpired()) {
+            return cachedValue.getValue();
         }
-        return "";
+
+        Map<String, Long> timeValues = new HashMap<>();
+        long secondsTotal = time / 1000;
+        long minutesTotal = secondsTotal / 60;
+        long hoursTotal = minutesTotal / 60;
+        long daysTotal = hoursTotal / 24;
+        long weeksTotal = daysTotal / 7;
+        long monthsTotal = daysTotal / 30;
+
+        timeValues.put("total_months", monthsTotal);
+        timeValues.put("total_weeks", weeksTotal);
+        timeValues.put("total_days", daysTotal);
+        timeValues.put("total_hours", hoursTotal);
+        timeValues.put("total_minutes", minutesTotal);
+        timeValues.put("total_seconds", secondsTotal);
+
+        timeValues.put("months", daysTotal / 30);
+        timeValues.put("weeks", daysTotal % 30 / 7);
+        timeValues.put("days", daysTotal % 7);
+        timeValues.put("hours", hoursTotal % 24);
+        timeValues.put("minutes", minutesTotal % 60);
+        timeValues.put("seconds", secondsTotal % 60);
+
+        Map<String, String> varMap = new HashMap<>();
+        varMap.put("mm", "months");
+        varMap.put("ww", "weeks");
+        varMap.put("dd", "days");
+        varMap.put("hh", "hours");
+        varMap.put("MM", "minutes");
+        varMap.put("ss", "seconds");
+
+        List<String> formatKeys = events.getContent("formats." + formatName, false);
+        String result = "";
+
+        for (String key : formatKeys) {
+            String conditionPath = "formats." + formatName + "." + key + ".condition";
+            String resultPath = "formats." + formatName + "." + key + ".result";
+
+            String condition = events.getString(conditionPath);
+            String resultTemplate = events.getString(resultPath);
+
+            if ("DEFAULT".equalsIgnoreCase(condition) || evaluateCondition(condition, timeValues)) {
+                result = renderTemplate(resultTemplate, timeValues, varMap);
+                break;
+            }
+        }
+
+        long expirationTime = System.currentTimeMillis() + events.getLong("cache-expire-ms", 1000);
+        formatCache.put(cacheKey, new CachedValue(result, expirationTime));
+
+        return result;
+    }
+
+    private String renderTemplate(String template, Map<String, Long> values, Map<String, String> varMap) {
+        Pattern pattern = Pattern.compile("\\{([a-zA-Z]+)(?::(\\d))?(?:\\?(.*?)\\|(.*?))?}");
+        Matcher matcher = pattern.matcher(template);
+        StringBuilder renderedString = new StringBuilder();
+
+        while (matcher.find()) {
+            String placeholderName = matcher.group(1);
+            String zeroPadding = matcher.group(2);
+            String singular = matcher.group(3);
+            String plural = matcher.group(4);
+
+            Long value = values.get(varMap.get(placeholderName));
+            if (value == null) {
+                continue;
+            }
+
+            String replacement;
+            if (singular != null && plural != null) {
+                replacement = (value == 1) ? singular : plural;
+            } else {
+                replacement = String.valueOf(value);
+            }
+
+            if (zeroPadding != null) {
+                int padding = Integer.parseInt(zeroPadding);
+                replacement = String.format("%0" + padding + "d", value);
+            }
+
+            matcher.appendReplacement(renderedString, Matcher.quoteReplacement(replacement));
+        }
+        matcher.appendTail(renderedString);
+
+        return renderedString.toString();
+    }
+
+    private boolean evaluateCondition(String condition, Map<String, Long> timeValues) {
+        try {
+            return new ExpressionEvaluator(condition, timeValues).evaluate();
+        } catch (Exception e) {
+            plugin.getLogs().error("Wrong formatted condition: '" + condition + "'. Error evaluating condition: " + condition, e);
+            return false;
+        }
     }
 
     private Date getSpecifiedEvent(ConfigurationHandler control, String event) {
         SimpleDateFormat format = new SimpleDateFormat(
-                control.getString("pattern","MM/dd/yy HH:mm:ss")
+                control.getString("pattern", "MM/dd/yy HH:mm:ss")
         );
-
         format.setTimeZone(
                 TimeZone.getTimeZone(
                         control.getString("events." + event + ".time-zone")
                 )
         );
-
         try {
             return format.parse(
                     control.getString("events." + event + ".date")
@@ -454,10 +384,6 @@ public class PluginPlaceholders {
             array.add(line);
         }
         return array;
-    }
-
-    private int math(long seconds, TimeUnit unit, int number) {
-        return Math.toIntExact(seconds / unit.toSeconds(number));
     }
 
     private String getWhitelistAuthor() {

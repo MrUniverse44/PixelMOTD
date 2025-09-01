@@ -4,12 +4,12 @@
 # ██─▄▄▄██─███▀─▀███─▄█▀██─██▀██─█▄█─██─██─███─████─██─████ ██─██─█  █─██─█
 # █▄▄▄███▄▄▄█▄▄█▄▄█▄▄▄▄▄█▄▄▄▄▄█▄▄▄█▄▄▄█▄▄▄▄██▄▄▄██▄▄▄▄████▄▄▄█▄▄▄▄█▄▄█▄▄▄▄█
 #
-# Using version: 9.4.1-SNAPSHOT (System originally created for PixelMOTD 10 moved to the Legacy version) by JustJustin
+# Using version: 9.5-SNAPSHOT (System originally created for PixelMOTD 10 moved to the Legacy version) by JustJustin
 #
 #   Author: JustJustin (MrUniverse44)
 #   SpigotMC Link: https://www.spigotmc.org/resources/37177/
-#   MC-Market Link: https://www.mc-market.org/resources/22313/
-#   GitHub Link: https://github.com/ShieldCommunity/PixelMOTD
+#   MC-Market Link: https://builtbybit.com/resources/22313/
+#   GitHub Link: https://github.com/MrUniverse44/LegacyPixelMOTD/
 #
 messages:
   reload: '&a플러그인이 올바르게 다시 로드되는데 <ms>ms가 소요되었습니다.'

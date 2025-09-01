@@ -65,16 +65,16 @@ public class ServerListPingListener extends BukkitPluginListener implements List
         final String user = getPlayerDatabase().getPlayer(address.getHostAddress(), unknown);
 
         if (isBlacklisted && getBlacklist().getStringList("players.by-name").contains(user)) {
-            builder.execute(MotdType.BLACKLIST, event, -1, user);
+            builder.execute(MotdType.BLACKLIST, event, -1, user, "");
             return;
         }
 
         if (isWhitelisted) {
-            builder.execute(MotdType.WHITELIST, event, -1, user);
+            builder.execute(MotdType.WHITELIST, event, -1, user, "");
             return;
         }
 
-        builder.execute(MotdType.NORMAL, event, -1, user);
+        builder.execute(MotdType.NORMAL, event, -1, user, "");
     }
 
     @Override

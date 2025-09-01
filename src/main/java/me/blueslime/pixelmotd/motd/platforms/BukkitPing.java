@@ -30,8 +30,8 @@ public class BukkitPing extends PingBuilder<JavaPlugin, CachedServerIcon, Server
     }
 
     @Override
-    public void execute(MotdType motdType, ServerListPingEvent ping, int code, String user) {
-        CachedMotd motd = fetchMotd(motdType, 735);
+    public void execute(MotdType motdType, ServerListPingEvent ping, int code, String user, String domain) {
+        CachedMotd motd = fetchMotd(motdType, 735, "");
 
         if (motd == null) {
             if (isDebug()) {

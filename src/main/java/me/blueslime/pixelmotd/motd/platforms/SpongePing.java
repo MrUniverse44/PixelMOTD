@@ -23,10 +23,10 @@ public class SpongePing extends PingBuilder<Server, Favicon, ClientPingServerEve
     }
 
     @Override
-    public void execute(MotdType motdType, ClientPingServerEvent event, int code, String user) {
+    public void execute(MotdType motdType, ClientPingServerEvent event, int code, String user, String domain) {
         ClientPingServerEvent.Response ping = event.response();
 
-        CachedMotd motd = fetchMotd(motdType, code);
+        CachedMotd motd = fetchMotd(motdType, code, "");
 
         if (motd == null) {
             if (isDebug()) {

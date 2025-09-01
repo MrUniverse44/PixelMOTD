@@ -83,16 +83,16 @@ public class ServerPingListener extends SpongePluginListener implements Ping {
         );
 
         if (isBlacklisted && getBlacklist().getStringList("players.by-name").contains(userName)) {
-            builder.execute(MotdType.BLACKLIST, event, -1, userName);
+            builder.execute(MotdType.BLACKLIST, event, -1, userName, "");
             return;
         }
 
         if (isWhitelisted) {
-            builder.execute(MotdType.WHITELIST, event, -1, userName);
+            builder.execute(MotdType.WHITELIST, event, -1, userName, "");
             return;
         }
 
-        builder.execute(MotdType.NORMAL, event, -1, userName);
+        builder.execute(MotdType.NORMAL, event, -1, userName, "");
         return;
     }
 

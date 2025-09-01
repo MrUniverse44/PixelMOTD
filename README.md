@@ -36,7 +36,7 @@
 
 - You can download the plugin releases from our [Spigot MC](https://www.spigotmc.org/resources/%E2%9E%A5-pixel-motd-1-8-1-19.37177) page!
 > - Legacy version releases are available through the [GitHub releases](https://github.com/MrUniverse44/LegacyPixelMOTD/releases) | *This build can be unstable! Please report any issue!*
-> - Bleeding edge releases are available through the [GitHub Actions page](https://github.com/ShieldCommunity/PixelMOTD/actions)  |  *This build can be unstable! Please report any issue!*
+> - Bleeding edge releases are available through the [GitHub Actions page](https://github.com/MrUniverse44/LegacyPixelMOTD//actions)  |  *This build can be unstable! Please report any issue!*
 
 ---
 
