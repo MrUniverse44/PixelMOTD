@@ -35,9 +35,9 @@ domain-setup:
   value: "mc.spigot.org,play.spigot.org"
 
 # If you enable this option, this motd will only appear for users with
-# 1.16+ and If you are in Spigot or Paper your server version need to be 1.16+
-# Or it will not work, But if you are in bungeecord or velocity it will work without problems.
-# Just stay updated in your proxy jar.
+# 1.16+ and If you are in Spigot or Paper, your server version needs to be 1.16+,
+# or it will not work. But if you are in bungeecord or velocity, it will work without problems.
+# Stay updated in your proxy jar.
 hex-motd: false
 
 # Modify your motd lines here

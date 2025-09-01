@@ -90,7 +90,7 @@ settings:
   # When your motd "hex" option is enabled
   # and the player is using a legacy version (-1.15)
   hide-hex-motds-in-legacy-versions: true
-  # Toggle outdated-client motd system
+  # Toggle an outdated-client motd system
   outdated-client-motd: false
   # Toggle outdated-server motd system
   outdated-server-motd: false
@@ -101,8 +101,9 @@ settings:
   # You can see protocols here: https://minecraft.fandom.com/wiki/Protocol_version
   # Default protocol versions are 1.8 to 1.19
 
-  # Default max protocol: 760 = 1.19.1
-  max-server-protocol: 760
+  # Default max protocol: 766 = 1.20.5
+  # If you don't want to update this protocol forever, use something like 900 or a big number
+  max-server-protocol: 766
 
   # Default min protocol 47 = 1.8.X
   min-server-protocol: 47
