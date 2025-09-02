@@ -27,17 +27,12 @@ public abstract class MetricsHandler<T> {
     }
 
     public static MetricsHandler<?> fromPlatform(SlimePlatform platform, Object main) {
-        switch (platform) {
-            case SPONGE:
-                return new SpongeMetricsHandler(main);
-            case VELOCITY:
-                return new VelocityMetricsHandler(main);
-            case BUKKIT:
-                return new BukkitMetricsHandler(main);
-            default:
-            case BUNGEECORD:
-                return new BungeeCordMetricsHandler(main);
-        }
+        return switch (platform) {
+            case SPONGE -> new SpongeMetricsHandler(main);
+            case VELOCITY -> new VelocityMetricsHandler(main);
+            case BUKKIT, PAPER, SPIGOT -> new BukkitMetricsHandler(main);
+            default -> new BungeeCordMetricsHandler(main);
+        };
     }
 
 

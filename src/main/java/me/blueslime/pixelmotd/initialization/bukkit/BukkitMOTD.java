@@ -12,7 +12,7 @@ public class BukkitMOTD extends JavaPlugin {
     @Override
     public void onEnable() {
         this.instance = new PixelMOTD<>(
-                SlimePlatform.BUKKIT,
+                SlimePlatform.SPIGOT,
                 this,
                 getDataFolder()
         );

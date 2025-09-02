@@ -37,14 +37,9 @@ public enum PluginList {
     }
 
     public static PluginList fromPlatform(SlimePlatform platform) {
-        switch (platform) {
-            default:
-            case VELOCITY:
-            case BUNGEECORD:
-                return SERVERS;
-            case BUKKIT:
-            case SPONGE:
-                return WORLDS;
-        }
+        return switch (platform) {
+            case BUKKIT, PAPER, SPIGOT, FORGE, NEO_FORGE, SPONGE -> WORLDS;
+            default -> SERVERS;
+        };
     }
 }

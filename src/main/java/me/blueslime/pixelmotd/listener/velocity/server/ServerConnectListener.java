@@ -37,7 +37,7 @@ public class ServerConnectListener extends VelocityPluginListener {
 
         final ServerInfo target;
 
-        if (!serverOptional.isPresent()) {
+        if (serverOptional.isEmpty()) {
             return;
         }
 

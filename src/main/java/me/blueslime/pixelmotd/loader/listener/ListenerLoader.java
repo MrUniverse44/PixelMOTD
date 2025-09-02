@@ -8,16 +8,11 @@ import me.blueslime.pixelmotd.loader.listener.type.VelocityListenerLoader;
 
 public abstract class ListenerLoader {
     public static ListenerLoader initialize(PixelMOTD<?> plugin) {
-        switch (plugin.getServerType()) {
-            case SPONGE:
-                return new SpongeListenerLoader(plugin);
-            default:
-            case BUNGEECORD:
-                return new BungeeListenerLoader(plugin);
-            case BUKKIT:
-                return new BukkitListenerLoader(plugin);
-            case VELOCITY:
-                return new VelocityListenerLoader(plugin);
-        }
+        return switch (plugin.getServerType()) {
+            case SPONGE -> new SpongeListenerLoader(plugin);
+            case BUKKIT, SPIGOT, PAPER -> new BukkitListenerLoader(plugin);
+            case VELOCITY -> new VelocityListenerLoader(plugin);
+            default -> new BungeeListenerLoader(plugin);
+        };
     }
 }

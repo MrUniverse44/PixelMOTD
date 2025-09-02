@@ -41,11 +41,6 @@ public enum MotdType {
 
     public static MotdType parseMotd(String integer) throws NumberFormatException {
         int id = Integer.parseInt(integer);
-        for (MotdType type : MotdType.values()) {
-            if (id == type.getId()) {
-                return type;
-            }
-        }
-        return INVALID;
+        return parseMotd(id);
     }
 }

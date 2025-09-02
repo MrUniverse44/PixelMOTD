@@ -99,8 +99,7 @@ public class CachedMotd {
     public boolean hasHover() {
         Object type = configuration.get("hover.type", "0");
 
-        if (type instanceof String) {
-            String v = (String)type;
+        if (type instanceof String v) {
             return v.equals("0");
         }
         if (type instanceof Integer) {

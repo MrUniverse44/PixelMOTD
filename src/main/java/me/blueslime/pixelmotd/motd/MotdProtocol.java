@@ -72,20 +72,10 @@ public enum MotdProtocol {
     public static MotdProtocol fromString(String paramText, int code) {
         paramText = paramText.toLowerCase(Locale.ENGLISH);
 
-        switch (paramText) {
-            case "always_negative":
-            case "negative":
-            case "2":
-                return ALWAYS_NEGATIVE;
-            default:
-            case "always_positive":
-            case "positive":
-            case "1":
-                return ALWAYS_POSITIVE.setCode(code);
-            case "default":
-            case "0":
-            case "-1":
-                return DEFAULT.setCode(code);
-        }
+        return switch (paramText) {
+            case "always_negative", "negative", "2" -> ALWAYS_NEGATIVE;
+            case "default", "0", "-1" -> DEFAULT.setCode(code);
+            default -> ALWAYS_POSITIVE.setCode(code);
+        };
     }
 }

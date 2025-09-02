@@ -35,14 +35,10 @@ public interface ServerHandler {
     int getSize();
 
     static <T> ServerHandler fromPlatform(SlimePlatform platform, T plugin) {
-        switch (platform) {
-            case BUKKIT:
-                return new BukkitServerHandler(plugin);
-            case VELOCITY:
-                return new VelocityServerHandler(plugin);
-            default:
-            case BUNGEECORD:
-                return new BungeeServerHandler(plugin);
-        }
+        return switch (platform) {
+            case BUKKIT, PAPER, SPIGOT -> new BukkitServerHandler(plugin);
+            case VELOCITY -> new VelocityServerHandler(plugin);
+            default -> new BungeeServerHandler(plugin);
+        };
     }
 }

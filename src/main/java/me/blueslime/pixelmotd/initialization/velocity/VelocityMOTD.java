@@ -24,7 +24,7 @@ import java.nio.file.Path;
         name = "PixelMOTD",
         version = "9.5-SNAPSHOT",
         description = "Simple Motd Plugin",
-        url = "https://github.com/MrUniverse44/XPixelMotds4",
+        url = "https://github.com/MrUniverse44/LegacyPixelMOTD",
         authors = { "JustJustin" }
 )
 public class VelocityMOTD {

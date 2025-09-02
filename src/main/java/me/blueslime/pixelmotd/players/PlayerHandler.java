@@ -41,15 +41,11 @@ public interface PlayerHandler {
     int getMaxPlayers();
 
     static <T> PlayerHandler fromPlatform(SlimePlatform platform, T plugin) {
-        switch (platform) {
-            case BUKKIT:
-                return new BukkitPlayerHandler(plugin);
-            case VELOCITY:
-                return new VelocityPlayerHandler(plugin);
-            default:
-            case BUNGEECORD:
-                return new BungeePlayerHandler(plugin);
-        }
+        return switch (platform) {
+            case BUKKIT, PAPER, SPIGOT -> new BukkitPlayerHandler(plugin);
+            case VELOCITY -> new VelocityPlayerHandler(plugin);
+            default -> new BungeePlayerHandler(plugin);
+        };
     }
 
 }
