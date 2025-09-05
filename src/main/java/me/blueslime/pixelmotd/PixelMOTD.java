@@ -15,6 +15,7 @@ import me.blueslime.slimelib.SlimePlugin;
 import me.blueslime.slimelib.SlimePluginInformation;
 import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
 import me.blueslime.slimelib.file.configuration.ConfigurationProvider;
+import me.blueslime.slimelib.impls.Implements;
 import me.blueslime.slimelib.logs.SlimeLogger;
 import me.blueslime.slimelib.logs.SlimeLogs;
 import me.blueslime.pixelmotd.utils.logger.LoggerSetup;
@@ -79,6 +80,11 @@ public class PixelMOTD<T> implements SlimePlugin<T> {
         );
 
         LoggerSetup.start(logs);
+        Implements.setEntry(
+            SlimeLogs.class,
+            logs,
+            true
+        );
 
         this.loader.setFiles(Configuration.class);
 

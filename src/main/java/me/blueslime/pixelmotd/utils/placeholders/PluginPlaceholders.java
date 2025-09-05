@@ -60,11 +60,10 @@ public class PluginPlaceholders {
 
         if (settings.getStatus(path + ".enabled", false)) {
             for (String key : settings.getContent(path, false)) {
-                if (!key.equalsIgnoreCase("prefix") && !key.equalsIgnoreCase("enabled")) {
-
+                if (!key.equalsIgnoreCase("prefix") && !key.equalsIgnoreCase("enabled") && !key.equalsIgnoreCase("cache-expire-ms")) {
                     OnlineList mode = OnlineList.fromText(
-                            key,
-                            settings.getString(path + "." + key + ".mode", "")
+                        key,
+                        String.valueOf(settings.get(path + "." + key + ".mode", "CONTAINS"))
                     );
 
                     List<String> values = settings.getStringList(path + "." + key + ".values");
@@ -306,9 +305,27 @@ public class PluginPlaceholders {
 
     private boolean evaluateCondition(String condition, Map<String, Long> timeValues) {
         try {
-            return new ExpressionEvaluator(condition, timeValues).evaluate();
+            if ("DEFAULT".equalsIgnoreCase(condition.trim())) {
+                return true;
+            }
+
+            String[] andTokens = condition.split("&&");
+            boolean finalResult = true;
+
+            for (String andToken : andTokens) {
+                boolean orResult = false;
+                String[] orTokens = andToken.split("\\|\\|");
+
+                for (String orToken : orTokens) {
+                    orResult = orResult || new ExpressionEvaluator(orToken.trim(), timeValues).evaluate();
+                }
+
+                finalResult = finalResult && orResult;
+            }
+
+            return finalResult;
         } catch (Exception e) {
-            plugin.getLogs().error("Wrong formatted condition: '" + condition + "'. Error evaluating condition: " + condition, e);
+            plugin.getLogs().error("Error evaluating condition: '" + condition + "'. " + e.getMessage());
             return false;
         }
     }
