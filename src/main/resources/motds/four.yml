@@ -1,20 +1,3 @@
-#
-# █████████████████████████████████████████████████████████████████████████
-# █▄─▄▄─█▄─▄█▄─▀─▄█▄─▄▄─█▄─▄███▄─▀█▀─▄█─▄▄─█─▄─▄─█▄─▄▄▀███▀ ██─▄▄─████─▄▄─█
-# ██─▄▄▄██─███▀─▀███─▄█▀██─██▀██─█▄█─██─██─███─████─██─████ ██─██─█  █─██─█
-# █▄▄▄███▄▄▄█▄▄█▄▄█▄▄▄▄▄█▄▄▄▄▄█▄▄▄█▄▄▄█▄▄▄▄██▄▄▄██▄▄▄▄████▄▄▄█▄▄▄▄█▄▄█▄▄▄▄█
-#
-# Using version: 9.5-SNAPSHOT (System originally created for PixelMOTD 10 moved to the Legacy version) by JustJustin
-#
-# Links:
-# * SpigotMC Link: https://www.spigotmc.org/resources/37177/
-# * MC-Market Link: https://builtbybit.com/resources/22313/
-# * GitHub Link: https://github.com/MrUniverse44/LegacyPixelMOTD/
-#
-# Tutorials:
-# * If you want to add Hex or Gradient, Click here: (tutorial link for hex here in the future)
-# * If you want to add Placeholders to your motd lines, Click here: (tutorial link for hex here in the future)
-
 # Configurable Motd Types:
 # * 0 = Normal (Default)
 # * 1 = WhiteList

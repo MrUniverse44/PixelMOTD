@@ -275,7 +275,9 @@ public class PluginPlaceholders {
             String plural = matcher.group(4);
 
             Long value = values.get(varMap.get(placeholderName));
+
             if (value == null) {
+                plugin.getLogs().warn("Placeholder '" + placeholderName + "' has no mapped value. Check your configuration.");
                 continue;
             }
 
@@ -287,8 +289,14 @@ public class PluginPlaceholders {
             }
 
             if (zeroPadding != null) {
-                int padding = Integer.parseInt(zeroPadding);
-                replacement = String.format("%0" + padding + "d", value);
+                try {
+                    int padding = Integer.parseInt(zeroPadding);
+                    if (padding > 0) {
+                        replacement = String.format("%0" + padding + "d", value);
+                    }
+                } catch (NumberFormatException e) {
+                    plugin.getLogs().error("Invalid number for zero-padding: " + zeroPadding + ". Check your format pattern.", e);
+                }
             }
 
             matcher.appendReplacement(renderedString, Matcher.quoteReplacement(replacement));
