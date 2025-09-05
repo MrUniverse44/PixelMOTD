@@ -1,6 +1,5 @@
 package me.blueslime.pixelmotd.utils.placeholders;
 
-import com.google.common.cache.Cache;
 import me.blueslime.pixelmotd.Configuration;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.initialization.bungeecord.BungeeMOTD;
@@ -18,7 +17,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
