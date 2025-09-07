@@ -4,10 +4,10 @@ import com.velocitypowered.api.event.proxy.ProxyPingEvent;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.ServerPing;
 import com.velocitypowered.api.util.Favicon;
+import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.slimelib.colors.platforms.velocity.DefaultSlimeColor;
 import me.blueslime.pixelmotd.motd.CachedMotd;
 import me.blueslime.pixelmotd.motd.MotdProtocol;
-import me.blueslime.pixelmotd.motd.MotdType;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
@@ -29,16 +29,19 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
         super(plugin, builder, hoverModule);
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Override
-    public void execute(MotdType motdType, ProxyPingEvent event, int code, String user, String domain) {
+    public void execute(ProxyPingEvent event, MotdSetup setup) {
         ServerPing.Builder ping = event.getPing().asBuilder();
 
-        CachedMotd motd = fetchMotd(motdType, code, domain);
+        CachedMotd motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
 
         if (motd == null) {
-            if (isDebug()) {
-                getLogs().debug("The plugin don't detect motds for MotdType: " + motdType);
-            }
+            getLogs().debug("The plugin don't detect motds to show with this next setup:");
+            getLogs().debug("Domain: " + setup.getDomain());
+            getLogs().debug("User: " + setup.getUser());
+            getLogs().debug("Protocol: " + setup.getCode());
+            getLogs().debug("User blacklist status: " + setup.isUserBlacklisted());
             return;
         }
 
@@ -57,28 +60,56 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
             }
         }
 
-        online = motd.getOnline(getPlugin());
-        max    = motd.getMax(getPlugin(), online);
+        online = motd.getOnlineAmount(getPlugin());
+        max    = motd.getMaxAmount(getPlugin(), online);
 
         if (motd.hasHover()) {
-            List<String> lines = motd.getConfiguration().getStringList("hover.value");
+            if (motd.isHoverCached()) {
+                if (motd.getHoverObject() == null) {
+                    List<String> lines = motd.getConfiguration().getStringList("server-hover.value");
 
-            lines.replaceAll(
-                    line -> line = legacy(line)
-            );
+                    lines.replaceAll(
+                            line -> line = legacy(line)
+                    );
 
-            ServerPing.SamplePlayer[] array = getHoverModule().convert(
-                    getHoverModule().generate(
-                            lines,
-                            user,
-                            online,
-                            max
-                    )
-            );
+                    ServerPing.SamplePlayer[] array = getHoverModule().convert(
+                            getHoverModule().generate(
+                                    lines,
+                                    setup.getUser(),
+                                    online,
+                                    max
+                            )
+                    );
 
-            ping.samplePlayers(
-                    array
-            );
+                    ping.samplePlayers(
+                        array
+                    );
+                    motd.setHoverObject(array);
+                } else {
+                    ping.samplePlayers(
+                        (ServerPing.SamplePlayer[]) motd.getHoverObject()
+                    );
+                }
+            } else {
+                List<String> lines = motd.getConfiguration().getStringList("server-hover.value");
+
+                lines.replaceAll(
+                        line -> line = legacy(line)
+                );
+
+                ServerPing.SamplePlayer[] array = getHoverModule().convert(
+                        getHoverModule().generate(
+                                lines,
+                                setup.getUser(),
+                                online,
+                                max
+                        )
+                );
+
+                ping.samplePlayers(
+                        array
+                );
+            }
         }
 
         MotdProtocol protocol = MotdProtocol.fromOther(
@@ -86,7 +117,7 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
         );
 
         if (protocol != MotdProtocol.ALWAYS_NEGATIVE) {
-            protocol = protocol.setCode(code);
+            protocol = protocol.setCode(setup.getCode());
         }
 
         int p1 = ping.getVersion().getProtocol();
@@ -96,7 +127,7 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
                         motd.getProtocolText(),
                         online,
                         max,
-                        user
+                        setup.getUser()
                 ),
                 true
         ).build();
@@ -122,12 +153,12 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
                     line1,
                     online,
                     max,
-                    user
+                    setup.getUser()
             ) + "\n" + getExtras().replace(
                     line2,
                     online,
                     max,
-                    user
+                    setup.getUser()
             );
 
             result = new DefaultSlimeColor(completed, true)
@@ -145,12 +176,12 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
                     line1,
                     online,
                     max,
-                    user
+                    setup.getUser()
             ) + "\n" + getExtras().replace(
                     line2,
                     online,
                     max,
-                    user
+                    setup.getUser()
             );
 
             result = color(completed);

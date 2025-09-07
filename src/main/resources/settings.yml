@@ -16,7 +16,7 @@ settings:
   config-version: 5
   # Enable Check update when the plugin is loading
   update-check: true
-  # Download automatically Updates
+  # Automatically download Updates
   auto-download-updates: true
   #Show extra information, this is disabled by default, This option will spam extra information
   #when a motd is being loaded.
@@ -90,23 +90,8 @@ settings:
   # When your motd "hex" option is enabled
   # and the player is using a legacy version (-1.15)
   hide-hex-motds-in-legacy-versions: true
-  # Toggle an outdated-client motd system
-  outdated-client-motd: false
-  # Toggle outdated-server motd system
-  outdated-server-motd: false
   # Toggle this option
   icon-system: true
-
-  # Config your max-server-protocol and min-server-protocol for the check of the outdated-client and outdated-server.
-  # You can see protocols here: https://minecraft.fandom.com/wiki/Protocol_version
-  # Default protocol versions are 1.8 to 1.19
-
-  # Default max protocol: 766 = 1.20.5
-  # If you don't want to update this protocol forever, use something like 900 or a big number
-  max-server-protocol: 766
-
-  # Default min protocol 47 = 1.8.X
-  min-server-protocol: 47
 
 # This section is for Bukkit with ProtocolLib
 bukkit:

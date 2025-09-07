@@ -7,10 +7,7 @@ public class DefaultModule extends PlayerModule {
     public static final DefaultModule INSTANCE = new DefaultModule();
 
     @Override
-    public int execute(int online, String values) {
-        if (values.contains(";")) {
-            return generateRandomParameter(values);
-        }
-        return Integer.parseInt(values);
+    public int execute(int online, int selectedAmount) {
+        return selectedAmount;
     }
 }

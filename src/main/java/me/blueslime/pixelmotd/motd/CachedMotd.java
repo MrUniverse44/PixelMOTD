@@ -13,29 +13,27 @@ public class CachedMotd {
     private MotdProtocol specifiedProtocol;
     private String protocol;
 
-    private final HashSet<String> validDomains = new HashSet<>();
-    private int domainType;
+    private final HashSet<String> conditionSet = new HashSet<>();
+    private final String pathKey;
 
-    public CachedMotd(ConfigurationHandler configuration) {
+    private Object hoverObject = null;
+
+    public CachedMotd(ConfigurationHandler configuration, String pathKey) {
         this.configuration = configuration;
-        init();
+        this.pathKey = pathKey;
+        init(pathKey);
     }
 
-    private void init() {
+    private void init(String path) {
         this.specifiedProtocol = MotdProtocol.fromObject(
-                configuration.get("protocol.modifier", "1"),
+                configuration.get(path + "server-displayed-protocol.modifier", "1"),
                 0
         );
+        this.protocol = configuration.getString(path + "server-displayed-protocol.text", "&fPlayers: &a%online%/1000");
 
-        this.domainType = configuration.getInt("domain-setup.type", -1);
-        if (this.domainType != -1) {
-            String domainValue = configuration.getString("domain-setup.value", "");
-            this.validDomains.addAll(Arrays.asList(domainValue.split(",")));
-        }
+        this.conditionSet.addAll(configuration.getStringList(path + "display-conditions"));
 
-        this.protocol = configuration.getString("protocol.text", "&fPlayers: &a%online%/1000");
-
-        if (protocol.contains("<before-the-icon>")) {
+        if (protocol != null && protocol.contains("<before-the-icon>")) {
             this.protocol = protocol.replace("<before-the-icon>", "");
 
             String[] split = protocol.split("<default>");
@@ -54,24 +52,22 @@ public class CachedMotd {
                 def = "";
             }
 
-            int max = configuration.getInt("protocol.space-length", 30);
+            int max = configuration.getInt(path + "server-displayed-protocol.space-length", 30);
 
-            StringBuilder builder = new StringBuilder();
-
-            for (int i = 0; i < max; i++) {
-                builder.append(" ");
-            }
-
-            this.protocol = icon + builder + def;
+            this.protocol = icon + " ".repeat(Math.max(0, max)) + def;
         }
     }
 
+    public Set<String> getConditionSet() {
+        return conditionSet;
+    }
+
     public String getLine1() {
-        return configuration.getString("line-1", "");
+        return configuration.getString(pathKey + "lines.line-1", "");
     }
 
     public String getLine2() {
-        return configuration.getString("line-2", "");
+        return configuration.getString(pathKey + "lines.line-2", "");
     }
 
     public MotdProtocol getModifier() {
@@ -82,74 +78,99 @@ public class CachedMotd {
         return protocol;
     }
 
-    public boolean isDomainAccepted(String domain) {
-        if (domain == null || domain.isEmpty()) {
-            return true;
+    public boolean hasHover() {
+        Object type = configuration.get(pathKey + "server-hover.type", "0");
+
+        String text = type.toString();
+
+        if (text == null) {
+            return false;
         }
 
-        if (domainType == -1) {
-            return true;
+        switch (text.toUpperCase(Locale.ENGLISH)) {
+            case "1", "CACHED", "PROCESS" -> {
+                return true;
+            }
+            default -> {
+                return false;
+            }
         }
-
-        boolean contains =  validDomains.contains(domain);
-
-        return (domainType == 0 && contains) || (domainType == 1 && !contains);
     }
 
-    public boolean hasHover() {
-        Object type = configuration.get("hover.type", "0");
+    public boolean isHoverCached() {
+        Object type = configuration.get(pathKey + "server-hover.type", "0");
 
-        if (type instanceof String v) {
-            return v.equals("0");
+        String text = type.toString();
+
+        if (text == null) {
+            return false;
         }
-        if (type instanceof Integer) {
-            int v = (int)type;
-            return v == 0;
-        }
-        return (boolean)type;
+
+        return text.toUpperCase(Locale.ENGLISH).equals("CACHED");
     }
 
     public List<String> getHover() {
-        return configuration.getStringList(TextDecoration.LEGACY, "hover.value");
+        return configuration.getStringList(TextDecoration.LEGACY, pathKey + "server-hover.value");
     }
 
-    public int getOnline(PixelMOTD<?> plugin) {
-        return PlayerModules.getOnlinePlayers(
-                plugin,
-                this
+    public int getOnlineAmount(PixelMOTD<?> plugin) {
+        return PlayerModules.execute(
+            configuration.get(pathKey + "server-players.online.type", 0),
+            plugin.getPlayerHandler().getPlayersSize(),
+            configuration.get(pathKey + "server-players.online.value", "10")
         );
     }
 
-    @SuppressWarnings("unused")
-    public int getMax(PixelMOTD<?> plugin) {
-        return PlayerModules.getMaximumPlayers(
-                plugin,
-                this
+    public int getMaxAmount(PixelMOTD<?> plugin) {
+        return PlayerModules.execute(
+            configuration.get(pathKey + "server-players.max.type", 0),
+            plugin.getPlayerHandler().getPlayersSize(),
+            configuration.get(pathKey + "server-players.max.value", "10")
         );
     }
 
-    public int getMax(PixelMOTD<?> plugin, int online) {
-        return PlayerModules.getMaximumPlayers(
-                plugin,
-                this,
-                online
+    public int getMaxAmount(PixelMOTD<?> plugin, int onlineAmount) {
+        return PlayerModules.execute(
+            false,
+            configuration.get(pathKey + "server-players.max.type", 1),
+            plugin.getPlayerHandler(),
+            onlineAmount,
+            configuration.get(pathKey + "server-players.max.value", "1000;1001")
         );
+    }
+
+    public int getPriority() {
+        return configuration.getInt(pathKey + "priority", -1);
     }
 
     public boolean hasHex() {
-        return configuration.getBoolean("hex-motd", false);
+        return configuration.getBoolean(pathKey + "process-modern-colors", false);
     }
 
     public boolean hasServerIcon() {
-        return "0".equals(configuration.get("icon.type", "0")) || configuration.getInt("icon.type", 0) == 0;
+        Object value = configuration.get(pathKey + "server-icon.type", "0");
+        String text = value.toString();
+
+        if (text == null) {
+            return false;
+        }
+
+        switch (text.toUpperCase(Locale.ENGLISH)) {
+            case "1", "CACHED", "DEFAULT_LOAD" -> {
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     public String getServerIcon() {
         return generateRandomParameter(
-                configuration.getString(
-                        "icon.value",
-                        "default-icon.png"
-                )
+            configuration.get(
+                pathKey + "server-icon.values",
+                "default-icon.png"
+            )
         );
     }
 
@@ -157,19 +178,53 @@ public class CachedMotd {
         return configuration;
     }
 
-    private String generateRandomParameter(String values) {
-        if (!values.contains(";")) {
-            return values;
+    private String generateRandomParameter(Object valueMapping) {
+        if (valueMapping instanceof Integer) {
+            return null;
+        }
+        List<String> valueList = new ArrayList<>();
+        if (valueMapping instanceof String values) {
+            values = values.replace("\n", ";");
+            if (!values.contains(";")) {
+                return values;
+            }
+            valueList.addAll(Arrays.asList(values.split(";")));
+        }
+        if (valueMapping instanceof Set<?> stringSet) {
+            stringSet.forEach(
+                val -> valueList.add(val.toString())
+            );
+        }
+        if (valueMapping instanceof List<?> stringList) {
+            stringList.forEach(
+                val -> valueList.add(val.toString())
+            );
+        }
+
+        if (valueList.isEmpty()) {
+            return null;
+        }
+
+        if (valueList.size() == 1) {
+            return valueList.getFirst();
         }
 
         Random random = ThreadLocalRandom.current();
 
-        ArrayList<String> valueList = new ArrayList<>(Arrays.asList(values.split(";")));
-
-        return valueList.get(
-                random.nextInt(
-                        valueList.size()
-                )
+        String val = valueList.get(
+            random.nextInt(
+                valueList.size()
+            )
         );
+
+        return !val.isEmpty() ? val : null;
+    }
+
+    public Object getHoverObject() {
+        return hoverObject;
+    }
+
+    public void setHoverObject(Object array) {
+        this.hoverObject = array;
     }
 }

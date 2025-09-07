@@ -59,6 +59,9 @@ public abstract class FaviconModule<T, I> {
     public abstract Icon<I> createIcon(SlimeLogs logs, File icon);
 
     public I getFavicon(String key) {
+        if (key == null) {
+            return null;
+        }
         if (key.equalsIgnoreCase("RANDOM")) {
             List<Icon<I>> values = icons.getValues();
 

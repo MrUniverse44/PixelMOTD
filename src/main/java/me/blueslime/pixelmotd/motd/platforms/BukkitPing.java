@@ -1,13 +1,13 @@
 package me.blueslime.pixelmotd.motd.platforms;
 
 import me.blueslime.pixelmotd.motd.CachedMotd;
-import me.blueslime.pixelmotd.motd.MotdType;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.external.iridiumcolorapi.IridiumColorAPI;
 import me.blueslime.pixelmotd.motd.builder.hover.EmptyPlayerInfo;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.hover.HoverModule;
+import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.pixelmotd.utils.PlaceholderParser;
 import me.blueslime.slimelib.colors.platforms.StringSlimeColor;
 import org.bukkit.ChatColor;
@@ -30,13 +30,15 @@ public class BukkitPing extends PingBuilder<JavaPlugin, CachedServerIcon, Server
     }
 
     @Override
-    public void execute(MotdType motdType, ServerListPingEvent ping, int code, String user, String domain) {
-        CachedMotd motd = fetchMotd(motdType, 735, "");
+    public void execute(ServerListPingEvent ping, MotdSetup setup) {
+        CachedMotd motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
 
         if (motd == null) {
-            if (isDebug()) {
-                getLogs().debug("The plugin don't detect motds for MotdType: " + motdType);
-            }
+            getLogs().debug("The plugin don't detect motds to show with this next setup:");
+            getLogs().debug("Domain: " + setup.getDomain());
+            getLogs().debug("User: " + setup.getUser());
+            getLogs().debug("Protocol: " + setup.getCode());
+            getLogs().debug("User blacklist status: " + setup.isUserBlacklisted());
             return;
         }
 
@@ -58,27 +60,27 @@ public class BukkitPing extends PingBuilder<JavaPlugin, CachedServerIcon, Server
             }
         }
 
-        max = motd.getMax(getPlugin(), ping.getNumPlayers());
+        max = motd.getMaxAmount(getPlugin(), ping.getNumPlayers());
 
         if (!motd.hasHex()) {
             line1 = ChatColor.translateAlternateColorCodes('&', motd.getLine1());
             line2 = ChatColor.translateAlternateColorCodes('&', motd.getLine2());
 
             if (hasPAPI) {
-                line1 = PlaceholderParser.parse(getPlugin().getLogs(), user, line1);
-                line2 = PlaceholderParser.parse(getPlugin().getLogs(), user, line2);
+                line1 = PlaceholderParser.parse(getPlugin().getLogs(), setup.getUser(), line1);
+                line2 = PlaceholderParser.parse(getPlugin().getLogs(), setup.getUser(), line2);
             }
 
             completed = getExtras().replace(
                     line1,
                     ping.getNumPlayers(),
                     ping.getMaxPlayers(),
-                    user
+                    setup.getUser()
             ) + "\n" + getExtras().replace(
                     line2,
                     ping.getNumPlayers(),
                     ping.getMaxPlayers(),
-                    user
+                    setup.getUser()
             );
 
         } else {
@@ -86,20 +88,20 @@ public class BukkitPing extends PingBuilder<JavaPlugin, CachedServerIcon, Server
             line2 = motd.getLine2();
 
             if (hasPAPI) {
-                line1 = PlaceholderParser.parse(getPlugin().getLogs(), user, line1);
-                line2 = PlaceholderParser.parse(getPlugin().getLogs(), user, line2);
+                line1 = PlaceholderParser.parse(getPlugin().getLogs(), setup.getUser(), line1);
+                line2 = PlaceholderParser.parse(getPlugin().getLogs(), setup.getUser(), line2);
             }
 
             completed = getExtras().replace(
                     line1,
                     ping.getNumPlayers(),
                     ping.getMaxPlayers(),
-                    user
+                    setup.getUser()
             ) + "\n" + getExtras().replace(
                     line2,
                     ping.getNumPlayers(),
                     ping.getMaxPlayers(),
-                    user
+                    setup.getUser()
             );
 
             if (!completed.contains("<GRADIENT:") && !completed.contains("<RAINBOW") && !completed.contains("<SOLID:")) {

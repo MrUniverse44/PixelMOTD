@@ -4,6 +4,7 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketEvent;
 import me.blueslime.pixelmotd.listener.bukkit.BukkitListener;
+import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.utils.ping.Ping;
@@ -11,7 +12,6 @@ import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.version.player.PlayerVersionHandler;
 import me.blueslime.pixelmotd.version.player.handlers.ProtocolLib;
 import me.blueslime.pixelmotd.listener.type.BukkitPacketPluginListener;
-import me.blueslime.pixelmotd.motd.MotdType;
 import me.blueslime.pixelmotd.motd.builder.favicon.platforms.ProtocolFavicon;
 import me.blueslime.pixelmotd.motd.builder.hover.platforms.ProtocolHover;
 import me.blueslime.pixelmotd.motd.platforms.ProtocolPing;
@@ -23,18 +23,6 @@ public class PacketListener extends BukkitPacketPluginListener implements Ping {
     private final PlayerVersionHandler playerVersionHandler = new ProtocolLib();
 
     private final ProtocolPing builder;
-
-    private boolean hasOutdatedClient;
-
-    private boolean hasOutdatedServer;
-
-    private boolean isWhitelisted;
-
-    private boolean isBlacklisted;
-
-    private int MIN_PROTOCOL;
-
-    private int MAX_PROTOCOL;
 
     private String unknown;
 
@@ -59,22 +47,7 @@ public class PacketListener extends BukkitPacketPluginListener implements Ping {
     public void reload() {
         final ConfigurationHandler control = getSettings();
 
-        unknown = control.getString("settings.unknown-player", "unknown#1");
-
-        ConfigurationHandler whitelist = getWhitelist();
-        ConfigurationHandler blacklist = getBlacklist();
-
-        this.isWhitelisted = whitelist.getStatus("enabled") &&
-                whitelist.getStatus("motd");
-
-        this.isBlacklisted = blacklist.getStatus("enabled") &&
-                blacklist.getStatus("motd");
-
-        hasOutdatedClient = control.getStatus("settings.outdated-client-motd",true);
-        hasOutdatedServer = control.getStatus("settings.outdated-server-motd",true);
-
-        MAX_PROTOCOL = control.getInt("settings.max-server-protocol",756);
-        MIN_PROTOCOL = control.getInt("settings.min-server-protocol",47);
+        this.unknown = control.getString("settings.unknown-player", "unknown#1");
 
         builder.update();
     }
@@ -124,27 +97,14 @@ public class PacketListener extends BukkitPacketPluginListener implements Ping {
             user = unknown;
         }
 
-        if (isBlacklisted && getBlacklist().getStringList("players.by-name").contains(user)) {
-            builder.execute(MotdType.BLACKLIST, event, protocol, user, "");
-            return;
-        }
+        MotdSetup setup = new MotdSetup(
+            getBlacklist().getStringList("players.by-name").contains(user),
+           "",
+            user,
+            protocol
+        );
 
-        if (isWhitelisted) {
-            builder.execute(MotdType.WHITELIST, event, protocol, user, "");
-            return;
-        }
-
-        if (!hasOutdatedClient && !hasOutdatedServer || protocol >= MIN_PROTOCOL && protocol <= MAX_PROTOCOL) {
-            builder.execute(MotdType.NORMAL, event, protocol, user, "");
-            return;
-        }
-        if (MAX_PROTOCOL < protocol && hasOutdatedServer) {
-            builder.execute(MotdType.OUTDATED_SERVER, event, protocol, user, "");
-            return;
-        }
-        if (MIN_PROTOCOL > protocol && hasOutdatedClient) {
-            builder.execute(MotdType.OUTDATED_CLIENT, event, protocol, user, "");
-        }
+        builder.execute(event, setup);
     }
 
     @Override

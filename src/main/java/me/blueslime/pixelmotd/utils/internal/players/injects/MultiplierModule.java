@@ -7,11 +7,7 @@ public class MultiplierModule extends PlayerModule {
     public static final MultiplierModule INSTANCE = new MultiplierModule();
 
     @Override
-    public int execute(int online, String values) {
-        if (values.contains(";")) {
-            return online * generateRandomParameter(values);
-        }
-
-        return online * Integer.parseInt(values);
+    public int execute(int online, int selectedAmount) {
+        return online * selectedAmount;
     }
 }

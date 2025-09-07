@@ -1,8 +1,8 @@
 package me.blueslime.pixelmotd.motd.platforms;
 
+import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.slimelib.colors.platforms.velocity.DefaultSlimeColor;
 import me.blueslime.pixelmotd.motd.CachedMotd;
-import me.blueslime.pixelmotd.motd.MotdType;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
@@ -12,6 +12,8 @@ import org.spongepowered.api.Server;
 import org.spongepowered.api.event.server.ClientPingServerEvent;
 import org.spongepowered.api.network.status.Favicon;
 import org.spongepowered.api.profile.GameProfile;
+
+import java.util.List;
 
 public class SpongePing extends PingBuilder<Server, Favicon, ClientPingServerEvent, GameProfile> {
     public SpongePing(
@@ -23,15 +25,17 @@ public class SpongePing extends PingBuilder<Server, Favicon, ClientPingServerEve
     }
 
     @Override
-    public void execute(MotdType motdType, ClientPingServerEvent event, int code, String user, String domain) {
+    public void execute(ClientPingServerEvent event, MotdSetup setup) {
         ClientPingServerEvent.Response ping = event.response();
 
-        CachedMotd motd = fetchMotd(motdType, code, "");
+        CachedMotd motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
 
         if (motd == null) {
-            if (isDebug()) {
-                getLogs().debug("The plugin don't detect motds for MotdType: " + motdType);
-            }
+            getLogs().debug("The plugin don't detect motds to show with this next setup:");
+            getLogs().debug("Domain: " + setup.getDomain());
+            getLogs().debug("User: " + setup.getUser());
+            getLogs().debug("Protocol: " + setup.getCode());
+            getLogs().debug("User blacklist status: " + setup.isUserBlacklisted());
             return;
         }
 
@@ -50,21 +54,44 @@ public class SpongePing extends PingBuilder<Server, Favicon, ClientPingServerEve
             }
         }
 
-        online = motd.getOnline(getPlugin());
-        max    = motd.getMax(getPlugin(), online);
+        online = motd.getOnlineAmount(getPlugin());
+        max    = motd.getMaxAmount(getPlugin(), online);
 
         if (motd.hasHover()) {
             if (ping.players().isPresent()) {
                 ping.players().get().profiles().clear();
 
-                ping.players().get().profiles().addAll(
-                        getHoverModule().generate(
+                if (motd.isHoverCached()) {
+                    if (motd.getHoverObject() == null) {
+                        List<GameProfile> array = getHoverModule().generate(
                                 motd.getHover(),
-                                user,
+                                setup.getUser(),
                                 online,
                                 max
-                        )
-                );
+                        );
+
+                        ping.players().get().profiles().addAll(
+                                array
+                        );
+                        motd.setHoverObject(array);
+                    } else {
+                        //noinspection unchecked
+                        ping.players().get().profiles().addAll(
+                            (List<GameProfile>) motd.getHoverObject()
+                        );
+                    }
+                } else {
+                    List<GameProfile> array = getHoverModule().generate(
+                            motd.getHover(),
+                            setup.getUser(),
+                            online,
+                            max
+                    );
+
+                    ping.players().get().profiles().addAll(
+                            array
+                    );
+                }
             }
         }
 
@@ -79,12 +106,12 @@ public class SpongePing extends PingBuilder<Server, Favicon, ClientPingServerEve
                     line1,
                     online,
                     max,
-                    user
+                    setup.getUser()
             ) + "\n" + getExtras().replace(
                     line2,
                     online,
                     max,
-                    user
+                    setup.getUser()
             );
 
             result = new DefaultSlimeColor(completed, true)
@@ -99,12 +126,12 @@ public class SpongePing extends PingBuilder<Server, Favicon, ClientPingServerEve
                     line1,
                     online,
                     max,
-                    user
+                    setup.getUser()
             ) + "\n" + getExtras().replace(
                     line2,
                     online,
                     max,
-                    user
+                    setup.getUser()
             );
 
             result = Component.text(

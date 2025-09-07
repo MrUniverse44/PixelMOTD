@@ -1,10 +1,10 @@
 package me.blueslime.pixelmotd.motd.platforms;
 
+import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.slimelib.colors.platforms.bungeecord.BungeeSlimeColor;
 import me.blueslime.slimelib.utils.ClassUtils;
 import me.blueslime.pixelmotd.motd.CachedMotd;
 import me.blueslime.pixelmotd.motd.MotdProtocol;
-import me.blueslime.pixelmotd.motd.MotdType;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.external.minedown.MineDown;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
@@ -28,13 +28,15 @@ public class BungeePing extends PingBuilder<Plugin, Favicon, ServerPing, ServerP
     }
 
     @Override
-    public void execute(MotdType motdType, ServerPing ping, int code, String user, String domain) {
-        CachedMotd motd = fetchMotd(motdType, code, domain);
+    public void execute(ServerPing ping, MotdSetup setup) {
+        CachedMotd motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
 
         if (motd == null) {
-            if (isDebug()) {
-                getLogs().debug("The plugin don't detect motds for MotdType: " + motdType + " or for domain: " + domain);
-            }
+            getLogs().debug("The plugin don't detect motds to show with this next setup:");
+            getLogs().debug("Domain: " + setup.getDomain());
+            getLogs().debug("User: " + setup.getUser());
+            getLogs().debug("Protocol: " + setup.getCode());
+            getLogs().debug("User blacklist status: " + setup.isUserBlacklisted());
             return;
         }
 
@@ -55,31 +57,53 @@ public class BungeePing extends PingBuilder<Plugin, Favicon, ServerPing, ServerP
             }
         }
 
-        online = motd.getOnline(getPlugin());
-        max    = motd.getMax(getPlugin(), online);
+        online = motd.getOnlineAmount(getPlugin());
+        max    = motd.getMaxAmount(getPlugin(), online);
 
         if (motd.hasHover()) {
-            ServerPing.PlayerInfo[] array = getHoverModule().convert(
-                    getHoverModule().generate(
-                            motd.getHover(),
-                            user,
-                            online,
-                            max
-                    )
-            );
+            if (motd.isHoverCached()) {
+                if (motd.getHoverObject() == null) {
+                    ServerPing.PlayerInfo[] array = getHoverModule().convert(
+                            getHoverModule().generate(
+                                    motd.getHover(),
+                                    setup.getUser(),
+                                    online,
+                                    max
+                            )
+                    );
 
-            ping.getPlayers().setSample(
-                    array
-            );
+                    ping.getPlayers().setSample(
+                            array
+                    );
+                    motd.setHoverObject(array);
+                } else {
+                    ping.getPlayers().setSample(
+                        (ServerPing.PlayerInfo[]) motd.getHoverObject()
+                    );
+                }
+            } else {
+                ServerPing.PlayerInfo[] array = getHoverModule().convert(
+                        getHoverModule().generate(
+                                motd.getHover(),
+                                setup.getUser(),
+                                online,
+                                max
+                        )
+                );
+
+                ping.getPlayers().setSample(
+                        array
+                );
+            }
         }
 
         MotdProtocol protocol = MotdProtocol.fromOther(
                 motd.getModifier()
-        ).setCode(code);
+        ).setCode(setup.getCode());
 
         if (protocol != MotdProtocol.DEFAULT) {
             if (protocol != MotdProtocol.ALWAYS_NEGATIVE) {
-                ping.getVersion().setProtocol(code);
+                ping.getVersion().setProtocol(setup.getCode());
             } else {
                 ping.getVersion().setProtocol(-1);
             }
@@ -92,7 +116,7 @@ public class BungeePing extends PingBuilder<Plugin, Favicon, ServerPing, ServerP
                                 motd.getProtocolText(),
                                 online,
                                 max,
-                                user
+                                setup.getUser()
                         )
                 )
         );
@@ -104,7 +128,7 @@ public class BungeePing extends PingBuilder<Plugin, Favicon, ServerPing, ServerP
             line1 = motd.getLine1();
             line2 = motd.getLine2();
 
-            completed = getExtras().replace(line1, online, max, user) + "\n" + getExtras().replace(line2, online, max, user);
+            completed = getExtras().replace(line1, online, max, setup.getUser()) + "\n" + getExtras().replace(line2, online, max, setup.getUser());
 
             if (line1.contains("%(slimecolor") || line2.contains("%(slimecolor")) {
 
@@ -133,11 +157,11 @@ public class BungeePing extends PingBuilder<Plugin, Favicon, ServerPing, ServerP
             line1 = ChatColor.translateAlternateColorCodes('&',motd.getLine1());
             line2 = ChatColor.translateAlternateColorCodes('&',motd.getLine2());
 
-            completed = getExtras().replace(line1, online, max, user) + "\n" + getExtras().replace(line2, online, max, user);
+            completed = getExtras().replace(line1, online, max, setup.getUser()) + "\n" + getExtras().replace(line2, online, max, setup.getUser());
 
             if (completed.contains("<#") && completed.contains(">") && isDebug()) {
                 getLogs().info("Are you trying to use gradients in a MotdType without support to gradients? :(, please remove <# or > from your motd lines");
-                getLogs().info("to stop this spam, motd type and motd name causing this issue: " + motdType + "." + motd);
+                getLogs().info("to stop this spam, motd type and motd name causing this issue: " + motd);
             }
 
             result.addExtra(completed);

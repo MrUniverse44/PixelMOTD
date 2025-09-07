@@ -9,6 +9,7 @@ public enum Configuration implements SlimeFiles {
     BLACKLIST("settings.yml", "blacklist", "blacklist.yml"),
     COMMANDS("commands.yml"),
     SETTINGS("settings.yml"),
+    MOTDS("motds.yml"),
     EVENTS("events.yml");
 
     private final boolean differentFolder;

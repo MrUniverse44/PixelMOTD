@@ -1,13 +1,11 @@
 package me.blueslime.pixelmotd.utils.internal.players;
 
-import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
-import me.blueslime.pixelmotd.PixelMOTD;
-import me.blueslime.pixelmotd.motd.CachedMotd;
 import me.blueslime.pixelmotd.players.PlayerHandler;
 import me.blueslime.pixelmotd.utils.internal.players.injects.*;
 
+import java.util.Locale;
+
 public class PlayerModules {
-    private static final ClassCastException CLASS_CAST_EXCEPTION = new ClassCastException("Did you tried to load a String list or a object in the player number");
     public static PlayerModule MULTIPLIER_MODULE = MultiplierModule.INSTANCE;
     public static PlayerModule DEFAULT_MODULE = DefaultModule.INSTANCE;
     public static PlayerModule REMOVE_MODULE = RemoverModule.INSTANCE;
@@ -15,46 +13,37 @@ public class PlayerModules {
     public static PlayerModule SPLIT_MODULE = SplitModule.INSTANCE;
     public static PlayerModule ADD_MODULE = AdderModule.INSTANCE;
 
-    public static int execute(Object type, PlayerHandler players, int online, Object values) {
-        String value;
-
-        if (values instanceof String) {
-            value = (String)values;
-        } else {
-            value = values + "";
+    public static int execute(boolean isOnline, Object type, PlayerHandler players, int online, Object values) {
+        String typeAsString = type.toString();
+        if (typeAsString == null) {
+            if (isOnline) {
+                return online;
+            }
+            return players.getMaxPlayers();
         }
-
-        String t = type + "";
-
-        return execute(
-                Integer.parseInt(t),
-                players,
-                online,
-                value
-        );
-    }
-
-    public static int execute(int type, PlayerHandler players, int online, String values) {
-        switch (type) {
-            default:
-            case -1:
-            case 0:
-                return players.getMaxPlayers();
-            case 1:
+        switch (typeAsString.toUpperCase(Locale.ENGLISH)) {
+            case "FIXED", "1" -> {
                 return DEFAULT_MODULE.execute(online, values);
-            case 2:
+            }
+            case "2", "ADD" -> {
                 return ADD_MODULE.execute(online, values);
-            case 3:
+            }
+            case "3", "REMOVE" -> {
                 return REMOVE_MODULE.execute(online, values);
-            case 4:
+            }
+            case "4", "MULTIPLY" -> {
                 return MULTIPLIER_MODULE.execute(online, values);
-            case 5:
+            }
+            case "5", "ONLINE_SPLIT" -> {
                 return SPLIT_MODULE.execute(online, values);
-            case 6:
+            }
+            case "6", "MIDDLE" -> {
                 return MIDDLE_MODULE.execute(online, values);
-            case 7:
+            }
+            case "7", "MIDDLE_ADD" -> {
                 return online + MIDDLE_MODULE.execute(online, values);
-            case 8:
+            }
+            case "8", "MIDDLE_REMOVE" -> {
                 int minimum = online - MIDDLE_MODULE.execute(online, values);
 
                 if (minimum < 1) {
@@ -62,95 +51,55 @@ public class PlayerModules {
                 }
 
                 return minimum;
-            case 9:
+            }
+            case "9", "ONLINE" -> {
                 return online;
+            }
+            default -> {
+                if (isOnline) {
+                    return online;
+                }
+                return players.getMaxPlayers();
+            }
         }
-    }
-
-    public static int execute(Object type, int online, int motdOnline, Object values) {
-
-        String value;
-
-        if (values instanceof String) {
-            value = (String)values;
-        } else {
-            value = values + "";
-        }
-
-        if (type instanceof String) {
-            return execute(
-                    Integer.parseInt(
-                            (String)type
-                    ),
-                    online,
-                    motdOnline,
-                    value
-            );
-        }
-        if (type instanceof Integer) {
-            return execute(
-                    (int)type,
-                    online,
-                    motdOnline,
-                    value
-            );
-        }
-        return execute(
-                -1,
-                online,
-                motdOnline,
-                value
-        );
     }
 
     public static int execute(Object type, int online, Object values) {
-        String value;
-
-        if (values instanceof String) {
-            value = (String)values;
-        } else {
-            value = String.valueOf((int)values);
-        }
-        if (type instanceof String) {
-            return executeDirect(
-                    Integer.parseInt(
-                            (String)type
-                    ),
-                    online,
-                    value
-            );
-        }
-        if (type instanceof Integer) {
-            return executeDirect(
-                    (int)type,
-                    online,
-                    value
-            );
-        }
-        throw CLASS_CAST_EXCEPTION;
+        return executeDirect(
+            type,
+            online,
+            values
+        );
     }
 
-    public static int execute(int type, int online, int motdOnline, String values) {
-        switch (type) {
-            default:
-            case -1:
-            case 0:
-                return online;
-            case 1:
+    public static int execute(Object type, int online, int motdOnline, Object values) {
+        String typeAsString = type.toString();
+        if (typeAsString == null) {
+            return online;
+        }
+        switch (typeAsString.toUpperCase(Locale.ENGLISH)) {
+            case "FIXED", "1" -> {
                 return DEFAULT_MODULE.execute(online, values);
-            case 2:
+            }
+            case "2", "ADD" -> {
                 return ADD_MODULE.execute(online, values);
-            case 3:
+            }
+            case "3", "REMOVE" -> {
                 return REMOVE_MODULE.execute(online, values);
-            case 4:
+            }
+            case "4", "MULTIPLY" -> {
                 return MULTIPLIER_MODULE.execute(online, values);
-            case 5:
+            }
+            case "5", "ONLINE_SPLIT" -> {
                 return SPLIT_MODULE.execute(online, values);
-            case 6:
+            }
+            case "6", "MIDDLE" -> {
                 return MIDDLE_MODULE.execute(online, values);
-            case 7:
+            }
+            case "7", "MIDDLE_ADD" -> {
                 return online + MIDDLE_MODULE.execute(online, values);
-            case 8:
+            }
+            case "8", "MIDDLE_REMOVE" -> {
                 int minimum = online - MIDDLE_MODULE.execute(online, values);
 
                 if (minimum < 1) {
@@ -158,32 +107,44 @@ public class PlayerModules {
                 }
 
                 return minimum;
-            case 9:
+            }
+            case "9", "ONLINE" -> {
                 return motdOnline;
+            }
+            default -> {
+                return online;
+            }
         }
     }
 
-    public static int executeDirect(int type, int online, String values) {
-        switch (type) {
-            default:
-            case -1:
-            case 0:
-                return online;
-            case 1:
+    public static int executeDirect(Object type, int online, Object values) {
+        String typeAsString = type.toString();
+        if (typeAsString == null) {
+            return online;
+        }
+        switch (typeAsString.toUpperCase(Locale.ENGLISH)) {
+            case "FIXED", "1" -> {
                 return DEFAULT_MODULE.execute(online, values);
-            case 2:
+            }
+            case "2", "ADD" -> {
                 return ADD_MODULE.execute(online, values);
-            case 3:
+            }
+            case "3", "REMOVE" -> {
                 return REMOVE_MODULE.execute(online, values);
-            case 4:
+            }
+            case "4", "MULTIPLY" -> {
                 return MULTIPLIER_MODULE.execute(online, values);
-            case 5:
+            }
+            case "5", "ONLINE_SPLIT" -> {
                 return SPLIT_MODULE.execute(online, values);
-            case 6:
+            }
+            case "6", "MIDDLE" -> {
                 return MIDDLE_MODULE.execute(online, values);
-            case 7:
+            }
+            case "7", "MIDDLE_ADD" -> {
                 return online + MIDDLE_MODULE.execute(online, values);
-            case 8:
+            }
+            case "8", "MIDDLE_REMOVE" -> {
                 int minimum = online - MIDDLE_MODULE.execute(online, values);
 
                 if (minimum < 1) {
@@ -191,54 +152,11 @@ public class PlayerModules {
                 }
 
                 return minimum;
+            }
+            default -> {
+                return online;
+            }
         }
-    }
-
-    public static int getMaximumPlayers(PixelMOTD<?> plugin, CachedMotd motd) {
-        return getMaximumPlayers(
-                plugin,
-                motd.getConfiguration()
-        );
-    }
-
-    public static int getMaximumPlayers(PixelMOTD<?> plugin, CachedMotd motd, int online) {
-        return getMaximumPlayers(
-                plugin,
-                motd.getConfiguration(),
-                online
-        );
-    }
-
-    public static int getOnlinePlayers(PixelMOTD<?> plugin, CachedMotd motd) {
-        return getOnlinePlayers(
-                plugin,
-                motd.getConfiguration()
-        );
-    }
-
-    public static int getMaximumPlayers(PixelMOTD<?> plugin, ConfigurationHandler configuration) {
-        return execute(
-                configuration.get("players.max.type", 1),
-                plugin.getPlayerHandler().getMaxPlayers(),
-                configuration.getString("players.max.value", "1000;1001")
-        );
-    }
-
-    public static int getMaximumPlayers(PixelMOTD<?> plugin, ConfigurationHandler configuration, int online) {
-        return execute(
-                configuration.get("players.max.type", 1),
-                plugin.getPlayerHandler(),
-                online,
-                configuration.get("players.max.value", "1000;1001")
-        );
-    }
-
-    public static int getOnlinePlayers(PixelMOTD<?> plugin, ConfigurationHandler configuration) {
-        return execute(
-                configuration.get("players.online.type", 0),
-                plugin.getPlayerHandler().getPlayersSize(),
-                configuration.get("players.online.value", "10")
-        );
     }
 
 }

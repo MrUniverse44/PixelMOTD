@@ -1,6 +1,5 @@
 package me.blueslime.pixelmotd.utils.placeholders;
 
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -14,7 +13,7 @@ import me.blueslime.slimelib.logs.SlimeLogs;
  * A simple and optimized expression evaluator for conditional logic.
  * Designed to process conditions from the events configuration with minimal overhead.
  */
-public class ExpressionEvaluator {
+public class SophisticatedExpressionEvaluator {
 
     private final String expression;
     private final Map<String, Long> variables;
@@ -28,7 +27,7 @@ public class ExpressionEvaluator {
         OPERATOR_PRECEDENCE.put("/", 2);
     }
 
-    public ExpressionEvaluator(String expression, Map<String, Long> variables) {
+    public SophisticatedExpressionEvaluator(String expression, Map<String, Long> variables) {
         this.expression = expression;
         this.variables = variables;
         this.logger = Implements.fetch(SlimeLogs.class);

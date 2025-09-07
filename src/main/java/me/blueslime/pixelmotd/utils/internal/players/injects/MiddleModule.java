@@ -7,7 +7,7 @@ public class MiddleModule extends PlayerModule {
     public static final MiddleModule INSTANCE = new MiddleModule();
 
     @Override
-    public int execute(int online, String values) {
+    public int execute(int online, int selectedAmount) {
         return online / 2;
     }
 }

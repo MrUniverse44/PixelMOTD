@@ -1,11 +1,11 @@
 package me.blueslime.pixelmotd.listener.sponge.server;
 
 import me.blueslime.pixelmotd.listener.sponge.SpongeListener;
+import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.utils.ping.Ping;
 import me.blueslime.pixelmotd.listener.type.SpongePluginListener;
-import me.blueslime.pixelmotd.motd.MotdType;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.favicon.platforms.SpongeFavicon;
 import me.blueslime.pixelmotd.motd.builder.hover.platforms.SpongeHover;
@@ -22,10 +22,6 @@ import java.net.SocketAddress;
 public class ServerPingListener extends SpongePluginListener implements Ping {
 
     private final SpongePing builder;
-
-    private boolean isWhitelisted;
-
-    private boolean isBlacklisted;
 
     private String unknown;
 
@@ -55,16 +51,6 @@ public class ServerPingListener extends SpongePluginListener implements Ping {
         } else {
             this.unknown = "unknown#1";
         }
-
-        ConfigurationHandler whitelist = getWhitelist();
-        ConfigurationHandler blacklist = getBlacklist();
-
-
-        this.isWhitelisted = whitelist.getStatus("enabled") &&
-                whitelist.getStatus("motd");
-
-        this.isBlacklisted = blacklist.getStatus("enabled") &&
-                blacklist.getStatus("motd");
     }
 
     @IsCancelled(value = Tristate.UNDEFINED)
@@ -82,18 +68,18 @@ public class ServerPingListener extends SpongePluginListener implements Ping {
                 address.toString(), unknown
         );
 
-        if (isBlacklisted && getBlacklist().getStringList("players.by-name").contains(userName)) {
-            builder.execute(MotdType.BLACKLIST, event, -1, userName, "");
-            return;
-        }
+        ClientPingServerEvent.Response response = event.response();
+        ClientPingServerEvent.Response.Version version = response.version();
+        int protocol = version.protocolVersion();
 
-        if (isWhitelisted) {
-            builder.execute(MotdType.WHITELIST, event, -1, userName, "");
-            return;
-        }
+        MotdSetup setup = new MotdSetup(
+            getBlacklist().getStringList("players.by-name").contains(userName),
+            "",
+            userName,
+            protocol
+        );
 
-        builder.execute(MotdType.NORMAL, event, -1, userName, "");
-        return;
+        builder.execute(event, setup);
     }
 
     public PingBuilder<?, ?, ?, ?> getPingBuilder() {

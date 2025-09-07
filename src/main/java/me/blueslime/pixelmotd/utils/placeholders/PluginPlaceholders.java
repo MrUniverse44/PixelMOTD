@@ -184,7 +184,7 @@ public class PluginPlaceholders {
                 } else if ("timezone".equals(placeholder)) {
                     replacement = timeZoneValue;
                 } else if (("timeleft".equals(placeholder) || "left".equals(placeholder)) && date != null) {
-                    long difference = date.getTime() - new Date().getTime();
+                    long difference = date.getTime() - System.currentTimeMillis();
                     if (difference >= 0L) {
                         String formatName = events.getString(path + "display-format", "digital");
                         replacement = formatEventTime(eventName, formatName, events, difference);
@@ -317,7 +317,7 @@ public class PluginPlaceholders {
                 String[] orTokens = andToken.split("\\|\\|");
 
                 for (String orToken : orTokens) {
-                    orResult = orResult || new ExpressionEvaluator(orToken.trim(), timeValues).evaluate();
+                    orResult = orResult || new SophisticatedExpressionEvaluator(orToken.trim(), timeValues).evaluate();
                 }
 
                 finalResult = finalResult && orResult;
@@ -330,7 +330,7 @@ public class PluginPlaceholders {
         }
     }
 
-    private Date getSpecifiedEvent(ConfigurationHandler control, String event) {
+    public static Date getSpecifiedEvent(ConfigurationHandler control, String event) {
         SimpleDateFormat format = new SimpleDateFormat(
                 control.getString("pattern", "MM/dd/yy HH:mm:ss")
         );

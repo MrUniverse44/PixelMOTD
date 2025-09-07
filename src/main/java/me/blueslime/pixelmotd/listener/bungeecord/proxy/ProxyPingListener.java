@@ -1,11 +1,11 @@
 package me.blueslime.pixelmotd.listener.bungeecord.proxy;
 
 import me.blueslime.pixelmotd.listener.bungeecord.BungeeListener;
+import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.utils.ping.Ping;
 import me.blueslime.pixelmotd.listener.type.BungeePluginListener;
-import me.blueslime.pixelmotd.motd.MotdType;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.favicon.platforms.BungeeFavicon;
 import me.blueslime.pixelmotd.motd.builder.hover.platforms.BungeeHover;
@@ -21,18 +21,6 @@ import java.net.SocketAddress;
 
 public class ProxyPingListener extends BungeePluginListener implements Ping {
     private final BungeePing builder;
-
-    private boolean hasOutdatedClient;
-
-    private boolean hasOutdatedServer;
-
-    private boolean isWhitelisted;
-
-    private boolean isBlacklisted;
-
-    private int MIN_PROTOCOL;
-
-    private int MAX_PROTOCOL;
 
     private String unknown;
 
@@ -63,30 +51,6 @@ public class ProxyPingListener extends BungeePluginListener implements Ping {
             this.unknown = "unknown#1";
         }
 
-        ConfigurationHandler whitelist = getWhitelist();
-        ConfigurationHandler blacklist = getBlacklist();
-
-
-        this.isWhitelisted = whitelist.getStatus("enabled") &&
-                whitelist.getStatus("motd");
-
-        this.isBlacklisted = blacklist.getStatus("enabled") &&
-                blacklist.getStatus("motd");
-
-        if (control != null) {
-            hasOutdatedClient = control.getStatus("settings.outdated-client-motd", true);
-            hasOutdatedServer = control.getStatus("settings.outdated-server-motd", true);
-
-            MAX_PROTOCOL = control.getInt("settings.max-server-protocol", 756);
-            MIN_PROTOCOL = control.getInt("settings.min-server-protocol", 47);
-        } else {
-            hasOutdatedClient = true;
-            hasOutdatedServer = true;
-
-            MAX_PROTOCOL = 758;
-            MIN_PROTOCOL = 47;
-        }
-
         builder.update();
     }
 
@@ -111,27 +75,14 @@ public class ProxyPingListener extends BungeePluginListener implements Ping {
         InetSocketAddress virtualHost = event.getConnection().getVirtualHost();
         String playerDomain = virtualHost.getHostString();
 
-        if (isBlacklisted && getBlacklist().getStringList("players.by-name").contains(userName)) {
-            builder.execute(MotdType.BLACKLIST, ping, protocol, userName, playerDomain);
-            return;
-        }
+        MotdSetup setup =  new MotdSetup(
+            getBlacklist().getStringList("players.by-name").contains(userName),
+            playerDomain,
+            userName,
+            protocol
+        );
 
-        if (isWhitelisted) {
-            builder.execute(MotdType.WHITELIST, ping, protocol, userName, playerDomain);
-            return;
-        }
-
-        if (!hasOutdatedClient && !hasOutdatedServer || protocol >= MIN_PROTOCOL && protocol <= MAX_PROTOCOL) {
-            builder.execute(MotdType.NORMAL, ping, protocol, userName, playerDomain);
-            return;
-        }
-        if (MAX_PROTOCOL < protocol && hasOutdatedServer) {
-            builder.execute(MotdType.OUTDATED_SERVER, ping, protocol, userName, playerDomain);
-            return;
-        }
-        if (MIN_PROTOCOL > protocol && hasOutdatedClient) {
-            builder.execute(MotdType.OUTDATED_CLIENT, ping, protocol, userName, playerDomain);
-        }
+        builder.execute(ping, setup);
     }
 
 

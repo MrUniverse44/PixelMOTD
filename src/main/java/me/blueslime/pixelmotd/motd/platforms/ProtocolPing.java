@@ -4,11 +4,11 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedServerPing;
+import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.pixelmotd.utils.color.BungeeHexUtil;
 import me.blueslime.slimelib.colors.platforms.StringSlimeColor;
 import me.blueslime.pixelmotd.motd.CachedMotd;
 import me.blueslime.pixelmotd.motd.MotdProtocol;
-import me.blueslime.pixelmotd.motd.MotdType;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.external.iridiumcolorapi.IridiumColorAPI;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
@@ -17,6 +17,8 @@ import me.blueslime.pixelmotd.motd.builder.hover.HoverModule;
 import me.blueslime.pixelmotd.utils.PlaceholderParser;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.List;
 
 public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.CompressedImage, PacketEvent, WrappedGameProfile> {
 
@@ -32,7 +34,7 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
     }
 
     @Override
-    public void execute(MotdType motdType, PacketEvent event, int code, String user, String domain) {
+    public void execute(PacketEvent event, MotdSetup setup) {
         int index = 0;
         WrappedServerPing ping = event.getPacket().getServerPings().read(index);
 
@@ -43,12 +45,14 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
             return;
         }
 
-        CachedMotd motd = fetchMotd(motdType, code, "");
+        CachedMotd motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
 
         if (motd == null) {
-            if (isDebug()) {
-                getLogs().debug("The plugin don't detect motds for MotdType: " + motdType);
-            }
+            getLogs().debug("The plugin don't detect motds to show with this next setup:");
+            getLogs().debug("Domain: " + setup.getDomain());
+            getLogs().debug("User: " + setup.getUser());
+            getLogs().debug("Protocol: " + setup.getCode());
+            getLogs().debug("User blacklist status: " + setup.isUserBlacklisted());
             return;
         }
 
@@ -71,27 +75,48 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
             }
         }
 
-        online = motd.getOnline(getPlugin());
-        max    = motd.getMax(getPlugin(), online);
+        online = motd.getOnlineAmount(getPlugin());
+        max    = motd.getMaxAmount(getPlugin(), online);
 
         if (motd.hasHover()) {
-            ping.setPlayers(
-                    getHoverModule().generate(
+            if (motd.isHoverCached()) {
+                if (motd.getHoverObject() == null) {
+                    List<WrappedGameProfile> array = getHoverModule().generate(
                             motd.getHover(),
-                            user,
+                            setup.getUser(),
                             online,
                             max
-                    )
-            );
+                    );
+                    ping.setPlayers(
+                            array
+                    );
+                    motd.setHoverObject(array);
+                } else {
+                    //noinspection unchecked
+                    ping.setPlayers(
+                        (List<WrappedGameProfile>) motd.getHoverObject()
+                    );
+                }
+            } else {
+                List<WrappedGameProfile> array = getHoverModule().generate(
+                        motd.getHover(),
+                        setup.getUser(),
+                        online,
+                        max
+                );
+                ping.setPlayers(
+                        array
+                );
+            }
         }
 
         MotdProtocol protocol = MotdProtocol.fromOther(
                 motd.getModifier()
-        ).setCode(code);
+        ).setCode(setup.getCode());
 
         if (protocol != MotdProtocol.DEFAULT) {
             if (protocol != MotdProtocol.ALWAYS_NEGATIVE) {
-                ping.setVersionProtocol(code);
+                ping.setVersionProtocol(setup.getCode());
             } else {
                 ping.setVersionProtocol(-1);
             }
@@ -104,7 +129,7 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
                                 motd.getProtocolText(),
                                 online,
                                 max,
-                                user
+                                setup.getUser()
                         )
                 )
         );
@@ -114,20 +139,20 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
             line2 = motd.getLine2();
 
             if (hasPAPI) {
-                line1 = PlaceholderParser.parse(getPlugin().getLogs(), user, line1);
-                line2 = PlaceholderParser.parse(getPlugin().getLogs(), user, line2);
+                line1 = PlaceholderParser.parse(getPlugin().getLogs(), setup.getUser(), line1);
+                line2 = PlaceholderParser.parse(getPlugin().getLogs(), setup.getUser(), line2);
             }
 
             completed = getExtras().replace(
                     line1,
                     online,
                     max,
-                    user
+                    setup.getUser()
             ) + "\n" + getExtras().replace(
                     line2,
                     online,
                     max,
-                    user
+                    setup.getUser()
             );
 
             completed = ChatColor.translateAlternateColorCodes('&', completed);
@@ -137,20 +162,20 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
             line2 = motd.getLine2();
 
             if (hasPAPI) {
-                line1 = PlaceholderParser.parse(getPlugin().getLogs(), user, line1);
-                line2 = PlaceholderParser.parse(getPlugin().getLogs(), user, line2);
+                line1 = PlaceholderParser.parse(getPlugin().getLogs(), setup.getUser(), line1);
+                line2 = PlaceholderParser.parse(getPlugin().getLogs(), setup.getUser(), line2);
             }
 
             completed = getExtras().replace(
                     line1,
                     online,
                     max,
-                    user
+                    setup.getUser()
             ) + "\n" + getExtras().replace(
                     line2,
                     online,
                     max,
-                    user
+                    setup.getUser()
             );
 
             if (completed.contains("<GRADIENT") || completed.contains("<RAINBOW") || completed.contains("<SOLID:")) {

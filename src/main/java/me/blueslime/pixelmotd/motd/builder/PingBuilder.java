@@ -1,40 +1,35 @@
 package me.blueslime.pixelmotd.motd.builder;
 
-import me.blueslime.slimelib.file.configuration.ConfigurationProvider;
+import me.blueslime.pixelmotd.Configuration;
+import me.blueslime.pixelmotd.motd.setup.MotdSetup;
+import me.blueslime.pixelmotd.utils.placeholders.ConditionEvaluator;
+import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
 import me.blueslime.slimelib.logs.SlimeLogs;
 import me.blueslime.pixelmotd.motd.CachedMotd;
-import me.blueslime.pixelmotd.motd.MotdType;
-
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
 import me.blueslime.pixelmotd.motd.builder.hover.HoverModule;
 import me.blueslime.pixelmotd.utils.placeholders.PluginPlaceholders;
-import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
-import me.blueslime.pixelmotd.utils.internal.storage.PluginStorage;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @SuppressWarnings("unused")
 public abstract class PingBuilder<T, I, E, H> {
-    private final PluginStorage<MotdType, List<CachedMotd>> motdStorage = PluginStorage.initAsConcurrentHash();
-    private final PluginStorage<MotdType, List<CachedMotd>> hexStorage = PluginStorage.initAsConcurrentHash();
+
+    private final List<CachedMotd> motdList = new ArrayList<>();
     private final FaviconModule<T, I> faviconModule;
     private final HoverModule<H> hoverModule;
 
     private boolean iconSystem = false;
 
-    private boolean separated = false;
-
     private final PixelMOTD<T> plugin;
-
     private final PluginPlaceholders pluginPlaceholders;
 
     public PingBuilder(PixelMOTD<T> plugin, FaviconModule<T, I> faviconModule, HoverModule<H> hoverModule) {
         this.faviconModule = faviconModule;
         this.hoverModule = hoverModule;
-        this.plugin  = plugin;
+        this.plugin = plugin;
         this.pluginPlaceholders = new PluginPlaceholders(plugin);
     }
 
@@ -47,178 +42,88 @@ public abstract class PingBuilder<T, I, E, H> {
         ConfigurationHandler settings = plugin.getSettings();
 
         if (settings != null) {
-
-            iconSystem = settings.getStatus("settings.icon-system", false);
-            separated = settings.getStatus("settings.hide-hex-motds-in-legacy-versions", true);
-
+            iconSystem = settings.getBoolean("settings.icon-system", false);
         } else {
             iconSystem = true;
-            separated = true;
-
             plugin.getLogs().error("Can't load settings data");
         }
 
-        File[] files = plugin.getMotdFolder().listFiles((dir, name) -> name.contains(".yml"));
+        motdList.clear();
 
-        if (files == null) {
-            return;
-        }
+        ConfigurationHandler motdsFile = plugin.getConfiguration(Configuration.MOTDS);
 
-        for (MotdType type : MotdType.values()) {
-            if (hexStorage.contains(type)) {
-                hexStorage.get(type).clear();
-            } else {
-                hexStorage.set(
-                        type,
-                        new ArrayList<>()
-                );
-            }
-            if (motdStorage.contains(type)) {
-                motdStorage.get(type).clear();
-            } else {
-                motdStorage.set(
-                        type,
-                        new ArrayList<>()
-                );
+        if (motdsFile.contains("motds")) {
+            for (String motdId : motdsFile.getContent("motds", false)) {
+                motdList.add(new CachedMotd(motdsFile, "motds." + motdId + "."));
             }
         }
 
-        ConfigurationProvider provider = plugin.getServerType()
-                .getProvider()
-                .getNewInstance();
+        // Sort MOTDs by priority from highest to lowest.
+        motdList.sort(Comparator.comparingInt(CachedMotd::getPriority).reversed());
+    }
 
-        if (!separated) {
-            for (File file : files) {
-                ConfigurationHandler motd = provider.create(
-                        plugin.getLogs(),
-                        file,
-                        true
-                );
-                MotdType type = MotdType.parseMotd(
-                        motd.getInt("type")
-                );
-                motdStorage.get(type).add(
-                        new CachedMotd(
-                                motd
-                        )
-                );
-            }
-        } else {
-            for (File file : files) {
-                ConfigurationHandler motd = provider.create(
-                        plugin.getLogs(),
-                        file,
-                        true
-                );
-                MotdType type = MotdType.parseMotd(
-                        motd.getInt("type")
-                );
+    public CachedMotd fetchMotd(int protocol, String domain, boolean userIsBlacklisted) {
+        // Collect all variables needed for condition evaluation.
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("client_protocol", protocol);
+        variables.put("client_used_domain", domain != null ? domain.toLowerCase(Locale.ENGLISH) : "");
+        variables.put("server_whitelist_status", plugin.getConfiguration(Configuration.WHITELIST).getStatus("enabled", false));
+        variables.put("client_support_hex_colors", protocol >= 735);
+        variables.put("client_is_blacklisted", userIsBlacklisted);
+        ConfigurationHandler events = plugin.getConfiguration(Configuration.EVENTS);
 
-                CachedMotd cachedMotd = new CachedMotd(motd);
+        boolean eventsActive = false;
 
-                if (motd.getBoolean("hex-motd", false)) {
-                    hexStorage.get(type).add(
-                            cachedMotd
-                    );
-                } else {
-                    motdStorage.get(type).add(
-                            cachedMotd
-                    );
+        for (String eventName : events.getContent("events", false)) {
+            String path = "events." + eventName + ".";
+            String eventNameValue = events.getString(path + "name", "Example Event 001");
+            String timeZoneValue = events.getString(path + "time-zone", "12/21/24 23:59:00");
+            Date eventDate = PluginPlaceholders.getSpecifiedEvent(events, eventName);
+            if (eventDate != null) {
+                long difference = eventDate.getTime() - System.currentTimeMillis();
+                variables.put("server_event_" + eventName + "_is_active", difference >= 0L);
+                if (difference >= 0L) {
+                    eventsActive = true;
                 }
             }
         }
+
+        variables.put("server_events_running", eventsActive);
+
+        for (CachedMotd motd : motdList) {
+            if (evaluateConditions(motd, variables)) {
+                return motd;
+            }
+        }
+
+        // Return a random MOTD from the list if none of the conditions are met.
+        // This acts as the default fallback.
+        if (!motdList.isEmpty()) {
+            return motdList.get(ThreadLocalRandom.current().nextInt(motdList.size()));
+        }
+
+        return null;
     }
 
-    public List<CachedMotd> loadMotds(MotdType type) {
-        File[] files = plugin.getMotdFolder().listFiles((dir, name) -> name.contains(".yml"));
-
-        if (files == null) {
-            return Collections.emptyList();
+    private boolean evaluateConditions(CachedMotd motd, Map<String, Object> variables) {
+        if (motd.getConditionSet().isEmpty()) {
+            return true;
         }
 
-        List<CachedMotd> motdList = new ArrayList<>();
-        List<CachedMotd> hexList = new ArrayList<>();
-
-        ConfigurationProvider provider = plugin.getServerType()
-                .getProvider()
-                .getNewInstance();
-
-        for (File file : files) {
-            ConfigurationHandler motd = provider.create(
-                    plugin.getLogs(),
-                    file,
-                    true
-            );
-            if (MotdType.parseMotd(
-                    motd.getInt("type")
-            ) == type) {
-                if (motd.getBoolean("hex-motd", false) && separated) {
-                    hexList.add(
-                            new CachedMotd(motd)
-                    );
-                } else {
-                    motdList.add(
-                            new CachedMotd(
-                                    motd
-                            )
-                    );
-                }
+        for (String condition : motd.getConditionSet()) {
+            ConditionEvaluator evaluator = new ConditionEvaluator(condition, variables);
+            if (!evaluator.evaluate()) {
+                return false;
             }
         }
-        motdStorage.set(type, motdList);
-        hexStorage.set(type, hexList);
-        return motdList;
-    }
-
-    public CachedMotd fetchMotd(MotdType type, int protocol, String domain) {
-        List<CachedMotd> motds;
-
-        if (separated && protocol >= 735) {
-            motds = hexStorage.get(type);
-        } else {
-            motds = motdStorage.get(type);
-        }
-
-        if (motds == null) {
-            motds = loadMotds(type);
-        }
-
-        if (motds.isEmpty()) {
-            if (type == MotdType.OUTDATED_CLIENT && (motdStorage.get(type).isEmpty() || (separated && hexStorage.get(type).isEmpty()))) {
-                return fetchMotd(MotdType.NORMAL, protocol, domain);
-            }
-            if (type == MotdType.OUTDATED_SERVER && (motdStorage.get(type).isEmpty() || (separated && hexStorage.get(type).isEmpty()))) {
-                return fetchMotd(MotdType.NORMAL, protocol, domain);
-            }
-            return null;
-        }
-
-        if (motds.size() == 1) {
-            return motds.getFirst();
-        }
-
-        if (domain.isEmpty()) {
-            return motds.get(
-                ThreadLocalRandom.current().nextInt(motds.size())
-            );
-        } else {
-            return motds.stream()
-                .filter(motd -> motd.isDomainAccepted(domain))
-                .findAny()
-                .orElse(null);
-        }
+        return true;
     }
 
     public SlimeLogs getLogs() {
         return plugin.getLogs();
     }
 
-    public abstract void execute(MotdType motdType, E ping, int code, String user, String domain);
-
-    @Deprecated
-    public void execute(MotdType motdType, E ping, int code, String user) {
-        execute(motdType, ping, code, user, "");
-    }
+    public abstract void execute(E ping, MotdSetup setup);
 
     public PixelMOTD<T> getPlugin() {
         return plugin;

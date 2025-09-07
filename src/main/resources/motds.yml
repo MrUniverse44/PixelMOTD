@@ -104,3 +104,215 @@ motds:
         - "&6[box][box][box][box][box] "
         - "&6[box]&0[box]&6[box][box][box] &aYou can modify it in your motd file"
         - "&6[box][box]&0[box][box]&6[box]"
+  '1':
+    # Priority
+    # Our plugin sort motds with this priority,
+    # They are ordered from highest to lowest, so the lowest will always be the last to be verified in terms of condition.
+    priority: 10
+    # Here you can decide when the motd can be displayed to the used
+    # If the display-conditions are empty, this motd will be used if you only have this motd,
+    # Or if others motds conditions are not successfully completed.
+    # You can see protocols here: https://minecraft.fandom.com/wiki/Protocol_version
+    # Variable list:
+    # <client_support_hex_colors> (Return: boolean)
+    # <client_is_blacklisted> (Return: boolean)
+    # <client_used_domain> (Return: String)
+    # <client_protocol> (Return Protocol ID: integer)
+    # <server_whitelist_status> (Return: boolean)
+    # <server_events_running> (Return: boolean)
+    # <server_event_<event name>_is_active> (Return: boolean)
+    display-conditions:
+      - "<server_whitelist_status> == true"
+    # With this option, you can decide if you want to process hex colors or gradients in the motd.
+    process-modern-colors: true
+    # Here you can modify motd lines
+    lines:
+      line-1: '&#1ABBC9&lPixel MOTD &7&ov9.6'
+      line-2: '&cServer is under maintenance'
+    # ----------------------------------------------------------------------------------------------------
+    #                                      PROTOCOL MODIFICATION
+    # ----------------------------------------------------------------------------------------------------
+    # If this option is disabled, the plugin will not change anything about this in the motd
+    server-displayed-protocol:
+      # This plugin has 4 modifiers for the protocol:
+      # -1 = This option is disabled, so this option will be ignored for the plugin.
+      # 0 = The protocol will be the default provided by the server or another plugin.
+      # 1 = The protocol will be always positive
+      # 2 = The protocol will always be negative
+      modifier: "2"
+      # Modify this length if the text is not in the exact place what you want
+      space-length: 53
+      # This is your protocol
+      text: "<before-the-icon>&c:( -><default>&fPlayers: &a%online%/1000"
+    # ----------------------------------------------------------------------------------------------------
+    #                                      PLAYER MODIFICATION
+    # ----------------------------------------------------------------------------------------------------
+    # This section controls the number of players displayed in the server list.
+    # This allows you to customize the information without relying on the actual number of online players.
+    server-players:
+      # Options for the maximum player count
+      max:
+        # Defines the type of modification for the maximum player count.
+        # Available options:
+        #   - DISABLED: No modification is applied; the server's default value is used.
+        #   - FIXED: The maximum player count will be a static value or a list of values.
+        #   - ADD: The specified value will be added to the number of online players.
+        #   - REMOVE: The specified value will be subtracted from the number of online players (result will not be less than 0).
+        #   - MULTIPLY: The online player count will be multiplied by this value.
+        #   - DIVIDE: The online player count will be divided by this value.
+        #   - MIDDLE_ADD: Half of the online player count will be added to the total.
+        #   - MIDDLE_REMOVE: Half of the online player count will be subtracted from the total.
+        type: FIXED
+
+        # The value or list of values to use, separated by a semicolon (';').
+        # If multiple values are provided, one will be chosen randomly from the list.
+        # Example: For FIXED, you can use "1000;2000" to alternate between 1000 and 2000.
+        value: "1000;1001"
+
+      # Options for the online player count
+      online:
+        # Defines the type of modification for the online player count.
+        # Options are the same as for 'max'.
+        type: DISABLED
+
+        # The value to use for the modification.
+        # Example: For FIXED, you can use "10" if you always want to display 10 players.
+        value: 10
+    # ----------------------------------------------------------------------------------------------------
+    #                                      SERVER FAVICON
+    # ----------------------------------------------------------------------------------------------------
+    server-icon:
+      # This plugin has 3 types for this section.
+      # Available options:
+      #   - DISABLED: No modification is applied; the server's default value is used.
+      #   - CACHED: Our plugin will cache the icon, and it will always be loaded in memory. This will be a better experience,
+      #             and gives much faster result.
+      #   - DEFAULT_LOAD: Our plugin will not cache the icon, and the icon will be loaded on each ping.
+      type: DISABLED
+      # Path of your icon, when you put only your file name it will search your file
+      # In the plugin's main folder, but you can use
+      # values like: "my-icon.png", icons should be in the icons folder
+      values:
+        - "default-icon.png"
+    # ----------------------------------------------------------------------------------------------------
+    #                                      SERVER HOVER LIST
+    # ----------------------------------------------------------------------------------------------------
+    server-hover:
+      # This plugin has 3 types for this section.
+      # Available options:
+      #   - DISABLED: No modification is applied; the server's default value is used.
+      #   - CACHED: No variables will work here, but the server response will be faster and without lag
+      #   - PROCESS: All variables will work, but the server response can be lowered depending on your variables here.
+      type: CACHED
+      value:
+        - "&6[box][box][box][box][box]"
+        - "&6[box]&0[box]&6[box]&0[box]&6[box] &aThis is your server motd"
+        - "&6[box][box][box][box][box] "
+        - "&6[box]&0[box]&6[box][box][box] &aYou can modify it in your motd file"
+        - "&6[box][box]&0[box][box]&6[box]"
+  '2':
+    # Priority
+    # Our plugin sort motds with this priority,
+    # They are ordered from highest to lowest, so the lowest will always be the last to be verified in terms of condition.
+    priority: 5
+    # Here you can decide when the motd can be displayed to the used
+    # If the display-conditions are empty, this motd will be used if you only have this motd,
+    # Or if others motds conditions are not successfully completed.
+    # You can see protocols here: https://minecraft.fandom.com/wiki/Protocol_version
+    # Variable list:
+    # <client_support_hex_colors> (Return: boolean)
+    # <client_is_blacklisted> (Return: boolean)
+    # <client_used_domain> (Return: String)
+    # <client_protocol> (Return Protocol ID: integer)
+    # <server_whitelist_status> (Return: boolean)
+    # <server_events_running> (Return: boolean)
+    # <server_event_<event name>_is_active> (Return: boolean)
+    display-conditions:
+      - "<client_support_hex_colors> == true"
+    # With this option, you can decide if you want to process hex colors or gradients in the motd.
+    process-modern-colors: true
+    # Here you can modify motd lines
+    lines:
+      line-1: '&#1ABBC9&lPixel MOTD &7&ov9.6'
+      line-2: '&7You can see this only if your client supports hex colors'
+    # ----------------------------------------------------------------------------------------------------
+    #                                      PROTOCOL MODIFICATION
+    # ----------------------------------------------------------------------------------------------------
+    # If this option is disabled, the plugin will not change anything about this in the motd
+    server-displayed-protocol:
+      # This plugin has 4 modifiers for the protocol:
+      # -1 = This option is disabled, so this option will be ignored for the plugin.
+      # 0 = The protocol will be the default provided by the server or another plugin.
+      # 1 = The protocol will be always positive
+      # 2 = The protocol will always be negative
+      modifier: "2"
+      # Modify this length if the text is not in the exact place what you want
+      space-length: 53
+      # This is your protocol
+      text: "<before-the-icon>&c:( -><default>&fPlayers: &a%online%/1000"
+    # ----------------------------------------------------------------------------------------------------
+    #                                      PLAYER MODIFICATION
+    # ----------------------------------------------------------------------------------------------------
+    # This section controls the number of players displayed in the server list.
+    # This allows you to customize the information without relying on the actual number of online players.
+    server-players:
+      # Options for the maximum player count
+      max:
+        # Defines the type of modification for the maximum player count.
+        # Available options:
+        #   - DISABLED: No modification is applied; the server's default value is used.
+        #   - FIXED: The maximum player count will be a static value or a list of values.
+        #   - ADD: The specified value will be added to the number of online players.
+        #   - REMOVE: The specified value will be subtracted from the number of online players (result will not be less than 0).
+        #   - MULTIPLY: The online player count will be multiplied by this value.
+        #   - DIVIDE: The online player count will be divided by this value.
+        #   - MIDDLE_ADD: Half of the online player count will be added to the total.
+        #   - MIDDLE_REMOVE: Half of the online player count will be subtracted from the total.
+        type: FIXED
+
+        # The value or list of values to use, separated by a semicolon (';').
+        # If multiple values are provided, one will be chosen randomly from the list.
+        # Example: For FIXED, you can use "1000;2000" to alternate between 1000 and 2000.
+        value: "1000;1001"
+
+      # Options for the online player count
+      online:
+        # Defines the type of modification for the online player count.
+        # Options are the same as for 'max'.
+        type: DISABLED
+
+        # The value to use for the modification.
+        # Example: For FIXED, you can use "10" if you always want to display 10 players.
+        value: 10
+    # ----------------------------------------------------------------------------------------------------
+    #                                      SERVER FAVICON
+    # ----------------------------------------------------------------------------------------------------
+    server-icon:
+      # This plugin has 3 types for this section.
+      # Available options:
+      #   - DISABLED: No modification is applied; the server's default value is used.
+      #   - CACHED: Our plugin will cache the icon, and it will always be loaded in memory. This will be a better experience,
+      #             and gives much faster result.
+      #   - DEFAULT_LOAD: Our plugin will not cache the icon, and the icon will be loaded on each ping.
+      type: DISABLED
+      # Path of your icon, when you put only your file name it will search your file
+      # In the plugin's main folder, but you can use
+      # values like: "my-icon.png", icons should be in the icons folder
+      values:
+        - "default-icon.png"
+    # ----------------------------------------------------------------------------------------------------
+    #                                      SERVER HOVER LIST
+    # ----------------------------------------------------------------------------------------------------
+    server-hover:
+      # This plugin has 3 types for this section.
+      # Available options:
+      #   - DISABLED: No modification is applied; the server's default value is used.
+      #   - CACHED: No variables will work here, but the server response will be faster and without lag
+      #   - PROCESS: All variables will work, but the server response can be lowered depending on your variables here.
+      type: CACHED
+      value:
+        - "&6[box][box][box][box][box]"
+        - "&6[box]&0[box]&6[box]&0[box]&6[box] &aThis is your server motd"
+        - "&6[box][box][box][box][box] "
+        - "&6[box]&0[box]&6[box][box][box] &aYou can modify it in your motd file"
+        - "&6[box][box]&0[box][box]&6[box]"
