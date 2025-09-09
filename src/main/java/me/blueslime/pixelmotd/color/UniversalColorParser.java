@@ -1,18 +1,4 @@
 package me.blueslime.pixelmotd.color;
-/*
- * UniversalColorParser.java
- *
- * Final improvements requested:
- *  - Fixed robust parsing of &x&F&F&... hex sequences (handles separators reliably and advances parser correctly)
- *  - Fixed the bug that produced 'x5x4xl...' instead of the expected letters
- *  - Added multi-stop gradients: <GRADIENT:hex,hex,hex>...</GRADIENT>
- *  - Added <rainbow>...</rainbow> support (case-insensitive)
- *  - Added MiniMessage-like color tags (<red>...</red>, <green>...</green>, etc.) which map
- *    to legacy Minecraft color codes for convenience.
- *  - Preserves style decorators inside gradients and other color tags, as previously implemented.
- *
- * The parser remains streaming and uses safety caps to avoid OOM or CPU spikes on malicious inputs.
- */
 
 import java.util.*;
 
