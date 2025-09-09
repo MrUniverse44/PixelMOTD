@@ -1,6 +1,7 @@
 package me.blueslime.pixelmotd.motd.builder.hover.platforms;
 
 import me.blueslime.pixelmotd.PixelMOTD;
+import me.blueslime.pixelmotd.color.renders.SpigotStringRenderer;
 import me.blueslime.pixelmotd.motd.builder.hover.HoverModule;
 import net.md_5.bungee.api.ServerPing;
 
@@ -31,10 +32,12 @@ public class BungeeHover extends HoverModule<ServerPing.PlayerInfo> {
         for (String line : lines) {
             sample.add(
                     new ServerPing.PlayerInfo(
+                        SpigotStringRenderer.create(
                             getExtras().replace(
                                     line, online, max, user
-                            ),
-                            uuid
+                            )
+                        ),
+                        uuid
                     )
             );
         }

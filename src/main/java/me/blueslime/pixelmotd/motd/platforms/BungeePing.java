@@ -1,12 +1,11 @@
 package me.blueslime.pixelmotd.motd.platforms;
 
+import me.blueslime.pixelmotd.color.renders.BungeeRenderer;
 import me.blueslime.pixelmotd.motd.setup.MotdSetup;
-import me.blueslime.slimelib.colors.platforms.bungeecord.BungeeSlimeColor;
 import me.blueslime.slimelib.utils.ClassUtils;
 import me.blueslime.pixelmotd.motd.CachedMotd;
 import me.blueslime.pixelmotd.motd.MotdProtocol;
 import me.blueslime.pixelmotd.PixelMOTD;
-import me.blueslime.pixelmotd.external.minedown.MineDown;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
 import me.blueslime.pixelmotd.motd.builder.hover.HoverModule;
@@ -123,34 +122,20 @@ public class BungeePing extends PingBuilder<Plugin, Favicon, ServerPing, ServerP
 
         TextComponent result = new TextComponent("");
 
-        if (motd.hasHex()) {
+        if (motd.hasHex() && HAS_RGB_SUPPORT) {
 
             line1 = motd.getLine1();
             line2 = motd.getLine2();
 
             completed = getExtras().replace(line1, online, max, setup.getUser()) + "\n" + getExtras().replace(line2, online, max, setup.getUser());
 
-            if (line1.contains("%(slimecolor") || line2.contains("%(slimecolor")) {
-
-                if (isDebug()) {
-                    getLogs().debug("Using SlimeColorAPI for the motd lines:" + completed);
-                }
-
-                result.addExtra(
-                        new BungeeSlimeColor(completed, HAS_RGB_SUPPORT)
-                                .build()
-                );
-
-            }  else {
-                if (isDebug()) {
-                    getLogs().debug("Using MineDown for the motd lines:" + completed);
-                }
-                result = new TextComponent(
-                        new MineDown(
-                                completed.replace('§', '&')).urlDetection(false).toComponent()
-                );
-
+            if (isDebug()) {
+                getLogs().debug("Using Universal Color by PixelMOTD for motd hex processor");
             }
+
+            result = new TextComponent(
+                BungeeRenderer.create(completed)
+            );
 
         } else {
 

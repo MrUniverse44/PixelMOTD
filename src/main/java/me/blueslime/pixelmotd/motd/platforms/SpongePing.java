@@ -1,7 +1,7 @@
 package me.blueslime.pixelmotd.motd.platforms;
 
+import me.blueslime.pixelmotd.color.renders.VelocitySpongeRenderer;
 import me.blueslime.pixelmotd.motd.setup.MotdSetup;
-import me.blueslime.slimelib.colors.platforms.velocity.DefaultSlimeColor;
 import me.blueslime.pixelmotd.motd.CachedMotd;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
@@ -114,8 +114,7 @@ public class SpongePing extends PingBuilder<Server, Favicon, ClientPingServerEve
                     setup.getUser()
             );
 
-            result = new DefaultSlimeColor(completed, true)
-                    .build();
+            result = VelocitySpongeRenderer.create(completed);
 
         } else {
 

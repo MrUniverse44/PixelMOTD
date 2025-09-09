@@ -2,6 +2,7 @@ package me.blueslime.pixelmotd.motd.builder.hover.platforms;
 
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import me.blueslime.pixelmotd.PixelMOTD;
+import me.blueslime.pixelmotd.color.renders.SpigotStringRenderer;
 import me.blueslime.pixelmotd.motd.builder.hover.HoverModule;
 
 import java.util.ArrayList;
@@ -30,12 +31,14 @@ public class ProtocolHover extends HoverModule<WrappedGameProfile> {
 
         for (String line : lines) {
             sample.add(
-                    new WrappedGameProfile(
-                            uuid,
-                            getExtras().replace(
-                                    line, online, max, user
-                            )
+                new WrappedGameProfile(
+                    uuid,
+                    SpigotStringRenderer.create(
+                        getExtras().replace(
+                            line, online, max, user
+                        )
                     )
+                )
             );
         }
 

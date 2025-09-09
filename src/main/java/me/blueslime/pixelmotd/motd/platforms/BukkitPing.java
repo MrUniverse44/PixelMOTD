@@ -1,15 +1,14 @@
 package me.blueslime.pixelmotd.motd.platforms;
 
+import me.blueslime.pixelmotd.color.renders.SpigotStringRenderer;
 import me.blueslime.pixelmotd.motd.CachedMotd;
 import me.blueslime.pixelmotd.PixelMOTD;
-import me.blueslime.pixelmotd.external.iridiumcolorapi.IridiumColorAPI;
 import me.blueslime.pixelmotd.motd.builder.hover.EmptyPlayerInfo;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.hover.HoverModule;
 import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.pixelmotd.utils.PlaceholderParser;
-import me.blueslime.slimelib.colors.platforms.StringSlimeColor;
 import org.bukkit.ChatColor;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -104,20 +103,11 @@ public class BukkitPing extends PingBuilder<JavaPlugin, CachedServerIcon, Server
                     setup.getUser()
             );
 
-            if (!completed.contains("<GRADIENT:") && !completed.contains("<RAINBOW") && !completed.contains("<SOLID:")) {
-
-                completed = new StringSlimeColor(
-                        completed,
-                        true
-                ).build();
-
-            } else {
-
-                completed = IridiumColorAPI.process(completed);
-
+            if (isDebug()) {
+                getLogs().debug("Using Universal Color by PixelMOTD for motd hex processor");
             }
 
-
+            completed = SpigotStringRenderer.create(completed);
             completed = ChatColor.translateAlternateColorCodes('&', completed);
         }
 

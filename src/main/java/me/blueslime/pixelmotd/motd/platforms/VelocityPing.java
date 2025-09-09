@@ -4,8 +4,8 @@ import com.velocitypowered.api.event.proxy.ProxyPingEvent;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.ServerPing;
 import com.velocitypowered.api.util.Favicon;
+import me.blueslime.pixelmotd.color.renders.VelocitySpongeRenderer;
 import me.blueslime.pixelmotd.motd.setup.MotdSetup;
-import me.blueslime.slimelib.colors.platforms.velocity.DefaultSlimeColor;
 import me.blueslime.pixelmotd.motd.CachedMotd;
 import me.blueslime.pixelmotd.motd.MotdProtocol;
 import me.blueslime.pixelmotd.PixelMOTD;
@@ -122,15 +122,14 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
 
         int p1 = ping.getVersion().getProtocol();
 
-        Component n1 = new DefaultSlimeColor(
-                getExtras().replace(
-                        motd.getProtocolText(),
-                        online,
-                        max,
-                        setup.getUser()
-                ),
-                true
-        ).build();
+        Component n1 = VelocitySpongeRenderer.create(
+            getExtras().replace(
+                motd.getProtocolText(),
+                online,
+                max,
+                setup.getUser()
+            )
+        );
 
         if (protocol != MotdProtocol.DEFAULT) {
             p1 = protocol.getCode();
@@ -161,8 +160,7 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
                     setup.getUser()
             );
 
-            result = new DefaultSlimeColor(completed, true)
-                    .build();
+            result = VelocitySpongeRenderer.create(completed);
 
         } else {
             line1 = legacy(
@@ -199,8 +197,7 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
     }
 
     private @NotNull String legacy(String content) {
-        Component color = new DefaultSlimeColor(content, true)
-                .build();
+        Component color = VelocitySpongeRenderer.create(content);
 
         return LegacyComponentSerializer.legacySection().serialize(
                 color

@@ -4,13 +4,11 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedServerPing;
+import me.blueslime.pixelmotd.color.renders.SpigotStringRenderer;
 import me.blueslime.pixelmotd.motd.setup.MotdSetup;
-import me.blueslime.pixelmotd.utils.color.BungeeHexUtil;
-import me.blueslime.slimelib.colors.platforms.StringSlimeColor;
 import me.blueslime.pixelmotd.motd.CachedMotd;
 import me.blueslime.pixelmotd.motd.MotdProtocol;
 import me.blueslime.pixelmotd.PixelMOTD;
-import me.blueslime.pixelmotd.external.iridiumcolorapi.IridiumColorAPI;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
 import me.blueslime.pixelmotd.motd.builder.hover.HoverModule;
@@ -178,19 +176,7 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
                     setup.getUser()
             );
 
-            if (completed.contains("<GRADIENT") || completed.contains("<RAINBOW") || completed.contains("<SOLID:")) {
-
-                completed = IridiumColorAPI.process(completed);
-
-            } else {
-                completed = new StringSlimeColor(
-                        completed,
-                        true
-                ).build();
-
-                completed = BungeeHexUtil.convert(completed);
-            }
-
+            completed = SpigotStringRenderer.create(completed);
             completed = ChatColor.translateAlternateColorCodes('&', completed);
         }
 
