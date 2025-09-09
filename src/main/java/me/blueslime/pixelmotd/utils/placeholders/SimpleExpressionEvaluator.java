@@ -1,19 +1,19 @@
 package me.blueslime.pixelmotd.utils.placeholders;
 
+import me.blueslime.slimelib.impls.Implements;
+import me.blueslime.slimelib.logs.SlimeLogs;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Evaluates a single boolean expression with arithmetic and parentheses.
- * E.g., "(5 * 2) > 9" or "client_protocol >= (735 - 1)".
- */
 public class SimpleExpressionEvaluator {
 
     private final String expression;
     private final Map<String, Object> variables;
+    private final SlimeLogs logs;
 
     private static final Map<String, Integer> OPERATOR_PRECEDENCE = new HashMap<>();
     static {
@@ -26,9 +26,11 @@ public class SimpleExpressionEvaluator {
     public SimpleExpressionEvaluator(String expression, Map<String, Object> variables) {
         this.expression = expression.trim();
         this.variables = variables;
+        this.logs = Implements.fetch(SlimeLogs.class);
     }
 
     public boolean evaluate() {
+        variables.keySet().forEach((key) -> logs.info("Variable: <" + key + ">"));
         if (expression.isEmpty()) {
             return false;
         }
@@ -51,7 +53,6 @@ public class SimpleExpressionEvaluator {
                 return (Boolean) result;
             }
         }
-
         return false;
     }
 
@@ -61,7 +62,6 @@ public class SimpleExpressionEvaluator {
         Stack<String> operators = new Stack<>();
         Stack<Object> values = new Stack<>();
 
-        // Pattern to match numbers, variables, and operators.
         Pattern tokenPattern = Pattern.compile("(\\(|\\)|[+\\-*/]|true|false|\\d+|'.*?'|\".*?\"|<[a-zA-Z_]+>)");
         Matcher matcher = tokenPattern.matcher(arithExpression);
 
@@ -76,7 +76,12 @@ public class SimpleExpressionEvaluator {
                 values.push(token.substring(1, token.length() - 1));
             } else if (token.matches("<[a-zA-Z_]+>")) {
                 String varName = token.substring(1, token.length() - 1);
-                values.push(variables.getOrDefault(varName, 0L));
+                Object value = variables.get(varName);
+                if (value != null) {
+                    values.push(value);
+                } else {
+                    throw new IllegalArgumentException("Undefined variable: <" + varName + ">");
+                }
             } else if (token.equals("(")) {
                 operators.push(token);
             } else if (token.equals(")")) {
@@ -98,6 +103,9 @@ public class SimpleExpressionEvaluator {
         }
 
         while (!operators.isEmpty()) {
+            if (operators.peek().equals("(") || operators.peek().equals(")")) {
+                throw new IllegalArgumentException("Mismatched parentheses.");
+            }
             applyOperator(operators.pop(), values);
         }
 
@@ -159,7 +167,10 @@ public class SimpleExpressionEvaluator {
                 case "!=" -> l != r;
                 default -> false;
             };
+        } else if (left instanceof String && right instanceof Long || left instanceof Long && right instanceof String) {
+            throw new IllegalArgumentException("Cannot compare String with Long.");
         }
+
         throw new IllegalArgumentException("Cannot compare mismatched types: " + left.getClass().getSimpleName() + " and " + right.getClass().getSimpleName());
     }
 }
