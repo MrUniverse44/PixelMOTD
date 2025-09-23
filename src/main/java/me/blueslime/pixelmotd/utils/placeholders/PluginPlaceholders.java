@@ -239,6 +239,10 @@ public class PluginPlaceholders {
         varMap.put("ss", "seconds");
 
         List<String> formatKeys = events.getContent("formats." + formatName, false);
+        formatKeys.sort(Comparator.comparingInt(formatKey ->
+            events.getInt("formats." + formatName + "." + formatKey + ".priority", 10)
+        ).reversed());
+
         String result = "";
 
         for (String key : formatKeys) {

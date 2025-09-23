@@ -1,8 +1,5 @@
 package me.blueslime.pixelmotd.utils.placeholders;
 
-import me.blueslime.slimelib.impls.Implements;
-import me.blueslime.slimelib.logs.SlimeLogs;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -13,7 +10,6 @@ public class SimpleExpressionEvaluator {
 
     private final String expression;
     private final Map<String, Object> variables;
-    private final SlimeLogs logs;
 
     private static final Map<String, Integer> OPERATOR_PRECEDENCE = new HashMap<>();
     static {
@@ -26,11 +22,9 @@ public class SimpleExpressionEvaluator {
     public SimpleExpressionEvaluator(String expression, Map<String, Object> variables) {
         this.expression = expression.trim();
         this.variables = variables;
-        this.logs = Implements.fetch(SlimeLogs.class);
     }
 
     public boolean evaluate() {
-        variables.keySet().forEach((key) -> logs.info("Variable: <" + key + ">"));
         if (expression.isEmpty()) {
             return false;
         }
@@ -43,17 +37,42 @@ public class SimpleExpressionEvaluator {
             String left = expression.substring(0, matcher.start()).trim();
             String right = expression.substring(matcher.end()).trim();
 
-            Object leftResult = evaluateArithmetic(left);
-            Object rightResult = evaluateArithmetic(right);
+            Object leftResult = parseToken(left);
+            Object rightResult = parseToken(right);
 
             return compare(leftResult, rightResult, operator);
         } else {
-            Object result = evaluateArithmetic(expression);
+            Object result = parseToken(expression);
             if (result instanceof Boolean) {
                 return (Boolean) result;
             }
         }
         return false;
+    }
+
+    private Object parseToken(String token) {
+        token = token.trim();
+        if (token.matches("true|false")) {
+            return Boolean.parseBoolean(token);
+        } else if (token.matches("'.*?'|\".*?\"")) {
+            return token.substring(1, token.length() - 1);
+        } else if (token.matches("-?\\d+")) {
+            return Long.parseLong(token);
+        } else if (token.matches("<[a-zA-Z_]+>")) {
+            String varName = token.substring(1, token.length() - 1);
+            Object value = variables.get(varName);
+            if (value != null) {
+                return value;
+            }
+            throw new IllegalArgumentException("Undefined variable: <" + varName + ">");
+        } else if (hasArithmetic(token)) {
+            return evaluateArithmetic(token);
+        }
+        throw new IllegalArgumentException("Invalid token: " + token);
+    }
+
+    private boolean hasArithmetic(String expression) {
+        return expression.contains("+") || expression.contains("-") || expression.contains("*") || expression.contains("/");
     }
 
     private Object evaluateArithmetic(String arithExpression) {
@@ -62,18 +81,14 @@ public class SimpleExpressionEvaluator {
         Stack<String> operators = new Stack<>();
         Stack<Object> values = new Stack<>();
 
-        Pattern tokenPattern = Pattern.compile("(\\(|\\)|[+\\-*/]|true|false|\\d+|'.*?'|\".*?\"|<[a-zA-Z_]+>)");
+        Pattern tokenPattern = Pattern.compile("(\\(|\\)|[+\\-*/]|[0-9]+|%[a-zA-Z_]+%)");
         Matcher matcher = tokenPattern.matcher(arithExpression);
 
         while (matcher.find()) {
             String token = matcher.group();
 
-            if (token.matches("\\d+")) {
+            if (token.matches("[0-9]+")) {
                 values.push(Long.parseLong(token));
-            } else if (token.matches("true|false")) {
-                values.push(Boolean.parseBoolean(token));
-            } else if (token.matches("'.*?'|\".*?\"")) {
-                values.push(token.substring(1, token.length() - 1));
             } else if (token.matches("<[a-zA-Z_]+>")) {
                 String varName = token.substring(1, token.length() - 1);
                 Object value = variables.get(varName);
@@ -89,7 +104,7 @@ public class SimpleExpressionEvaluator {
                     applyOperator(operators.pop(), values);
                 }
                 if (operators.isEmpty() || !operators.peek().equals("(")) {
-                    throw new IllegalArgumentException("Mismatched parentheses.");
+                    throw new IllegalArgumentException("Mismatched parentheses in expression: " + arithExpression);
                 }
                 operators.pop();
             } else if (OPERATOR_PRECEDENCE.containsKey(token)) {
@@ -98,19 +113,19 @@ public class SimpleExpressionEvaluator {
                 }
                 operators.push(token);
             } else {
-                throw new IllegalArgumentException("Invalid token: " + token);
+                throw new IllegalArgumentException("Invalid token in expression: " + token);
             }
         }
 
         while (!operators.isEmpty()) {
             if (operators.peek().equals("(") || operators.peek().equals(")")) {
-                throw new IllegalArgumentException("Mismatched parentheses.");
+                throw new IllegalArgumentException("Mismatched parentheses in expression: " + arithExpression);
             }
             applyOperator(operators.pop(), values);
         }
 
         if (values.size() != 1) {
-            throw new IllegalArgumentException("Invalid expression format.");
+            throw new IllegalArgumentException("Invalid arithmetic expression format: " + arithExpression);
         }
 
         return values.pop();

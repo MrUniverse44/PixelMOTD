@@ -3,6 +3,8 @@ formats:
   # If you want to use this format, enter in your event configuration the value of the path 'display-format' to 'digital'
   digital:
     '0':
+      # Define what should be verified first - Ordered high first
+      priority: 100
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -35,6 +37,8 @@ formats:
       # The result will be '09'.
       result: "{mm:0}:{ww:0}:{dd:0}:{hh:0}:{MM:0}:{ss:0}"
     '1':
+      # Define what should be verified first - Ordered high first
+      priority: 90
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -67,6 +71,8 @@ formats:
       # The result will be '09'.
       result: "{ww:0}:{dd:0}:{hh:0}:{MM:0}:{ss:0}"
     '2':
+      # Define what should be verified first - Ordered high first
+      priority: 80
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -99,6 +105,8 @@ formats:
       # The result will be '09'.
       result: "{dd:0}:{hh:0}:{MM:0}:{ss:0}"
     '3':
+      # Define what should be verified first - Ordered high first
+      priority: 70
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -131,6 +139,8 @@ formats:
       # The result will be '09'.
       result: "{hh:0}:{MM:0}:{ss:0}"
     '4':
+      # Define what should be verified first - Ordered high first
+      priority: 60
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -163,6 +173,8 @@ formats:
       # The result will be '09'.
       result: "{MM:0}:{ss:0}"
     '5':
+      # Define what should be verified first - Ordered high first
+      priority: 50
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -195,6 +207,8 @@ formats:
       # The result will be '09'.
       result: "{ss:0}"
     '6':
+      # Define what should be verified first - Ordered high first
+      priority: 40
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -229,6 +243,8 @@ formats:
   # If you want to use this format, enter in your event configuration the value of the path 'display-format' to 'simple'
   simple:
     '0':
+      # Define what should be verified first - Ordered high first
+      priority: 100
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -261,6 +277,8 @@ formats:
       # The result will be '09'.
       result: "{mm:0}m, {ww:0}w, {dd:0}d, {hh:0}h, {MM:0}m, {ss:0}s"
     '1':
+      # Define what should be verified first - Ordered high first
+      priority: 90
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -293,6 +311,8 @@ formats:
       # The result will be '09'.
       result: "{ww:0}w, {dd:0}d, {hh:0}h, {MM:0}m, {ss:0}s"
     '2':
+      # Define what should be verified first - Ordered high first
+      priority: 80
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -325,6 +345,8 @@ formats:
       # The result will be '09'.
       result: "{dd:0}d, {hh:0}h, {MM:0}m, {ss:0}s"
     '3':
+      # Define what should be verified first - Ordered high first
+      priority: 70
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -357,6 +379,8 @@ formats:
       # The result will be '09'.
       result: "{hh:0}h, {MM:0}m, {ss:0}s"
     '4':
+      # Define what should be verified first - Ordered high first
+      priority: 60
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -389,6 +413,8 @@ formats:
       # The result will be '09'.
       result: "{MM:0}m, {ss:0}s"
     '5':
+      # Define what should be verified first - Ordered high first
+      priority: 50
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -421,6 +447,8 @@ formats:
       # The result will be '09'.
       result: "{ss:0}s"
     '6':
+      # Define what should be verified first - Ordered high first
+      priority: 40
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -455,6 +483,8 @@ formats:
   # If you want to use this format, enter in your event configuration the value of the path 'display-format' to 'entire'
   entire:
     '0':
+      # Define what should be verified first - Ordered high first
+      priority: 100
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -487,6 +517,8 @@ formats:
       # The result will be '09'.
       result: "{mm:0} {mm?month|months}, {ww:0} {ww?week|weeks}, {dd:0} {dd?day|days}, {hh:0} {hh?hour|hours}, {MM:0} {MM?minute|minutes}, {ss:0} {ss?second|seconds}"
     '1':
+      # Define what should be verified first - Ordered high first
+      priority: 90
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -519,6 +551,8 @@ formats:
       # The result will be '09'.
       result: "{ww:0} {ww?week|weeks}, {dd:0} {dd?day|days}, {hh:0} {hh?hour|hours}, {MM:0} {MM?minute|minutes}, {ss:0} {ss?second|seconds}"
     '2':
+      # Define what should be verified first - Ordered high first
+      priority: 80
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -551,6 +585,8 @@ formats:
       # The result will be '09'.
       result: "{dd:0} {dd?day|days}, {hh:0} {hh?hour|hours}, {MM:0} {MM?minute|minutes}, {ss:0} {ss?second|seconds}"
     '3':
+      # Define what should be verified first - Ordered high first
+      priority: 70
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -583,6 +619,8 @@ formats:
       # The result will be '09'.
       result: "{hh:0} {hh?hour|hours}, {MM:0} {MM?minute|minutes}, {ss:0} {ss?second|seconds}"
     '4':
+      # Define what should be verified first - Ordered high first
+      priority: 60
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -615,6 +653,8 @@ formats:
       # The result will be '09'.
       result: "{MM:0} {MM?minute|minutes}, {ss:0} {ss?second|seconds}"
     '5':
+      # Define what should be verified first - Ordered high first
+      priority: 50
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
@@ -647,6 +687,8 @@ formats:
       # The result will be '09'.
       result: "{ss:0} {ss?second|seconds}"
     '6':
+      # Define what should be verified first - Ordered high first
+      priority: 40
       # You can put here conditions as 'value >= otherValue' and other conditions and at the same time use & and OR
       # using '||' representing OR and '&&' representing AND.
       # But also if the condition is DEFAULT, it will be used if you don't have other entries or if other conditions
