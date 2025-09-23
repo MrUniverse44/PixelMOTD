@@ -39,6 +39,13 @@ public class BungeePing extends PingBuilder<Plugin, Favicon, ServerPing, ServerP
             return;
         }
 
+        if (isDebug()) {
+            getLogs().debug("Domain: " + setup.getDomain());
+            getLogs().debug("User: " + setup.getUser());
+            getLogs().debug("Protocol: " + setup.getCode());
+            getLogs().debug("User blacklist status: " + setup.isUserBlacklisted());
+        }
+
         String line1, line2, completed;
 
         int online, max;

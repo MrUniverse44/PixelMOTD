@@ -90,10 +90,19 @@ public abstract class PingBuilder<T, I, E, H> {
 
         variables.put("server_events_running", eventsActive);
 
+        List<CachedMotd> evaluatedPositive = new ArrayList<>();
+
         for (CachedMotd motd : motdList) {
             if (evaluateConditions(motd, variables)) {
-                return motd;
+                evaluatedPositive.add(motd);
             }
+        }
+
+        if (!evaluatedPositive.isEmpty()) {
+            if (evaluatedPositive.size() > 1) {
+                return evaluatedPositive.get(ThreadLocalRandom.current().nextInt(evaluatedPositive.size()));
+            }
+            return evaluatedPositive.getFirst();
         }
 
         // Return a random MOTD from the list if none of the conditions are met.

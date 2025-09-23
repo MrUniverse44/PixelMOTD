@@ -150,24 +150,44 @@ public class UniversalColorParser {
             // Angle tags: <#hex> ... </#>, <GRADIENT:hex[,hex...]>, <RAINBOW>, <red> etc.
             if (ch == '<') {
                 // try <#HEX>
-                if (i+1 < len && input.charAt(i+1) == '#') {
-                    // flush
+                if (i + 1 < len && input.charAt(i + 1) == '#') {
+                    // flush actual buffer
                     if (!cur.isEmpty()) { out.add(new Segment(cur.toString(), curColor, false, bold, italic, under, strike, obf)); cur.setLength(0); segmentsCreated++; }
-                    int j = i+2; StringBuilder hx = new StringBuilder();
+
+                    int j = i + 2;
+                    StringBuilder hx = new StringBuilder();
                     while (j < len && isHexChar(input.charAt(j)) && hx.length() < 6) { hx.append(input.charAt(j)); j++; }
+
                     if (j < len && input.charAt(j) == '>') {
                         j++;
-                        int close = input.indexOf("</#>", j);
-                        int closeAlt = input.indexOf("</#", j);
-                        if (close == -1 && closeAlt == -1) {
-                            String body = input.substring(j);
+                        int closeSimple = input.indexOf("</#>", j);
+                        int closePrefix = input.indexOf("</#", j);
+
+                        if (closeSimple != -1) {
+                            String body = input.substring(j, closeSimple);
                             out.addAll(applyColorOverrideToParsed(body, Color.fromHex(hx.toString()), bold, italic, under, strike, obf));
-                            return mergeSegments(out);
+                            int closeEnd = input.indexOf('>', closeSimple);
+                            i = (closeEnd == -1) ? len : closeEnd + 1;
+                            continue;
+                        } else if (closePrefix != -1) {
+                            int after = closePrefix + "</#".length();
+                            StringBuilder hx2 = new StringBuilder();
+                            int k = after;
+                            while (k < len && isHexChar(input.charAt(k)) && hx2.length() < 6) { hx2.append(input.charAt(k)); k++; }
+                            if (k < len && input.charAt(k) == '>') {
+                                String body = input.substring(j, closePrefix);
+                                out.addAll(applyColorOverrideToParsed(body, Color.fromHex(hx.toString()), bold, italic, under, strike, obf));
+                                i = k + 1;
+                                continue;
+                            }
                         }
-                        int closeIndex = (close != -1) ? close : closeAlt;
-                        String body = input.substring(j, closeIndex);
+
+                        int nextTag = input.indexOf('<', j);
+                        int end = (nextTag == -1) ? len : nextTag;
+                        String body = input.substring(j, end);
                         out.addAll(applyColorOverrideToParsed(body, Color.fromHex(hx.toString()), bold, italic, under, strike, obf));
-                        int closeEnd = input.indexOf('>', closeIndex); i = (closeEnd == -1) ? len : closeEnd+1; continue;
+                        i = end;
+                        continue;
                     }
                 }
 
@@ -179,7 +199,7 @@ public class UniversalColorParser {
                     if (j < len && input.charAt(j) == '>') {
                         j++;
                         String tok = token.toString();
-                        String[] parts = tok.split("[,;|]");
+                        String[] parts = tok.split("[,;|:]");
                         List<Color> stops = new ArrayList<>();
                         for (String p : parts) {
                             String p2 = p.trim().replace("#", "");
@@ -239,13 +259,44 @@ public class UniversalColorParser {
                 // named mini-message tags like <red>text</red>
                 String tag = readTagName(input, i);
                 if (tag != null) {
-                    Character code = NAME_TO_LEGACY.get(tag.toLowerCase());
+                    String tagLower = tag.toLowerCase();
+                    Character code = NAME_TO_LEGACY.get(tagLower);
+
+                    // style HTML-like: <b>, <bold>, <i>, <italic>, <u>, <underline>, <s>, <strikethrough>, <obf>, <obfuscated>
+                    boolean isStyleTag = tagLower.equals("b") || tagLower.equals("bold")
+                            || tagLower.equals("i") || tagLower.equals("italic")
+                            || tagLower.equals("u") || tagLower.equals("underline")
+                            || tagLower.equals("s") || tagLower.equals("strikethrough")
+                            || tagLower.equals("obf") || tagLower.equals("obfuscated");
+
+                    if (isStyleTag) {
+                        int openEnd = input.indexOf('>', i);
+                        if (openEnd == -1) { i++; continue; }
+                        int close = indexOfIgnoreCase(input, "</" + tag + ">", openEnd + 1);
+                        if (close == -1) {
+                            String body = input.substring(openEnd + 1);
+                            out.addAll(applyStyleOverrideToParsed(body, tagLower));
+                            return mergeSegments(out);
+                        }
+                        String body = input.substring(openEnd + 1, close);
+                        out.addAll(applyStyleOverrideToParsed(body, tagLower));
+                        i = close + tag.length() + 3;
+                        continue;
+                    }
+
                     if (code != null) {
-                        int openEnd = input.indexOf('>', i); if (openEnd == -1) { i++; continue; }
-                        int close = indexOfIgnoreCase(input, "</"+tag+">", openEnd+1);
-                        if (close == -1) { String body = input.substring(openEnd+1); out.addAll(applyColorOverrideToParsed(body, legacyCodeToColor(code), bold, italic, under, strike, obf)); return mergeSegments(out); }
-                        String body = input.substring(openEnd+1, close);
-                        out.addAll(applyColorOverrideToParsed(body, legacyCodeToColor(code), bold, italic, under, strike, obf)); i = close + tag.length() + 3; continue;
+                        int openEnd = input.indexOf('>', i);
+                        if (openEnd == -1) { i++; continue; }
+                        int close = indexOfIgnoreCase(input, "</" + tag + ">", openEnd + 1);
+                        if (close == -1) {
+                            String body = input.substring(openEnd + 1);
+                            out.addAll(applyColorOverrideToParsed(body, legacyCodeToColor(code), bold, italic, under, strike, obf));
+                            return mergeSegments(out);
+                        }
+                        String body = input.substring(openEnd + 1, close);
+                        out.addAll(applyColorOverrideToParsed(body, legacyCodeToColor(code), bold, italic, under, strike, obf));
+                        i = close + tag.length() + 3;
+                        continue;
                     }
                 }
             }
@@ -256,6 +307,33 @@ public class UniversalColorParser {
         if (!cur.isEmpty()) out.add(new Segment(cur.toString(), curColor, false, bold, italic, under, strike, obf));
         return mergeSegments(out);
     }
+
+    // parse content and override only styles (bold/italic/underline/strikethrough/obfuscated)
+    private static List<Segment> applyStyleOverrideToParsed(String body, String styleTag) {
+        List<Segment> parsed = parse(body);
+        boolean addBold = styleTag.equals("b") || styleTag.equals("bold");
+        boolean addItalic = styleTag.equals("i") || styleTag.equals("italic");
+        boolean addUnder = styleTag.equals("u") || styleTag.equals("underline");
+        boolean addStrike = styleTag.equals("s") || styleTag.equals("strikethrough");
+        boolean addObf = styleTag.equals("obf") || styleTag.equals("obfuscated");
+
+        List<Segment> out = new ArrayList<>();
+        for (Segment s : parsed) {
+            for (int i = 0; i < s.text.length(); i++) {
+                char ch = s.text.charAt(i);
+                out.add(new Segment(String.valueOf(ch),
+                        s.color,
+                        s.gradient,
+                        s.bold || addBold,
+                        s.italic || addItalic,
+                        s.underlined || addUnder,
+                        s.strikethrough || addStrike,
+                        s.obfuscated || addObf));
+            }
+        }
+        return mergeSegments(out);
+    }
+
 
     // ---------------- parsing helper ----------------
     private static class ParseHexResult { final Color color; final int newIndex; ParseHexResult(Color color,int newIndex){this.color=color;this.newIndex=newIndex;} }
@@ -305,9 +383,14 @@ public class UniversalColorParser {
     private static int indexOfIgnoreCase(String s, String sub, int from) { return s.toLowerCase().indexOf(sub.toLowerCase(), from); }
 
     private static String readTagName(String input, int idx) {
-        // read tag name after '<'
-        if (input.charAt(idx) != '<') return null; int j = idx+1; StringBuilder b=new StringBuilder(); while (j<input.length()) { char c=input.charAt(j); if (Character.isLetter(c) || c=='_' || c=='-') { b.append(c); j++; } else break; }
-        return b.isEmpty() ?null:b.toString();
+        if (input.charAt(idx) != '<') return null;
+        int j = idx + 1;
+        StringBuilder b = new StringBuilder();
+        while (j < input.length()) {
+            char c = input.charAt(j);
+            if (Character.isLetter(c) || c == '_' || c == '-') { b.append(c); j++; } else break;
+        }
+        return b.isEmpty() ? null : b.toString();
     }
 
     // parse content and override colors
