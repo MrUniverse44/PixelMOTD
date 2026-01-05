@@ -22,6 +22,8 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
 
     private final boolean hasPAPI;
 
+    private boolean motdFailed = false;
+
     public ProtocolPing(
             PixelMOTD<JavaPlugin> plugin,
             FaviconModule<JavaPlugin, WrappedServerPing.CompressedImage> builder,
@@ -29,6 +31,12 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
     ) {
         super(plugin, builder, hoverModule);
         hasPAPI = plugin.getPlugin().getServer().getPluginManager().isPluginEnabled("PlaceholderAPI");
+    }
+
+    @Override
+    public void update() {
+        motdFailed = false;
+        super.update();
     }
 
     @Override
@@ -76,7 +84,7 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
         online = motd.getOnlineAmount(getPlugin());
         max    = motd.getMaxAmount(getPlugin(), online);
 
-        if (motd.hasHover()) {
+        if (motd.hasHover() && !motdFailed) {
             try {
                 if (motd.isHoverCached()) {
                     if (motd.getHoverObject() == null) {
@@ -113,7 +121,8 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
                     );
                 }
             } catch (Exception e) {
-                getLogs().error("Failed to load hover, this is a ProtocolLib Exception, please report it to their developers", e);
+                motdFailed = true;
+                getLogs().error("Failed to load hover, this is a ProtocolLib Exception, please report it to their developers, if you reload it again the plugin will attempt again to create the hover", e);
             }
         }
 
