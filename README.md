@@ -1,16 +1,13 @@
-# PixelMOTD 4
+<img align="center" alt="Features Image" src="https://i.imgur.com/J3szbKb.png">
 
-## This is a "Legacy" version for the PixelMOTD, this github will be only updated between 9.3.6 to 10.0.0
 ---
 
-<img align="center" alt="Features Image" src="https://cdn.discordapp.com/attachments/987409771302883341/987454796376207360/FeatureList.png">
+<img align="center" alt="Features Image" src="https://i.imgur.com/w316mYr.png">
 
+---
 
-
-* Spigot 1.8.X - 1.19.X
-* BungeeCord 1.8.X - 1.19.X
-* Velocity 3.X.X
-* Customizable MaxPlayers
+* Support for: **Spigot, Paper, Velocity, Bukkit, Sponge, Waterfall, BungeeCord**
+* Customizable Max players
 * Hex Colors Support (1.16+) (Gradient and Normal Hex)
 * Per Motd Icons!
 * Per Server & World Whitelist
@@ -24,32 +21,14 @@
 * Whitelist Permission Bypass
 * Customizable Motd Hover
 * Customizable Commands
-* Support for many forks like WaterFall, FlameCord, PaperMC, Purpur & more.
 * Custom Protocol Message
 * Custom Server-Icon
 * Performance Boost
 
 ---
 
-
-<img align="center" alt="Features Image" src="https://cdn.discordapp.com/attachments/987409771302883341/987454795906433054/DownloadLink.png">
-
 - You can download the plugin releases from our [Spigot MC](https://www.spigotmc.org/resources/%E2%9E%A5-pixel-motd-1-8-1-19.37177) page!
-> - Legacy version releases are available through the [GitHub releases](https://github.com/MrUniverse44/LegacyPixelMOTD/releases) | *This build can be unstable! Please report any issue!*
-> - Bleeding edge releases are available through the [GitHub Actions page](https://github.com/MrUniverse44/LegacyPixelMOTD//actions)  |  *This build can be unstable! Please report any issue!*
+> - Development version releases are available through the [GitHub releases](https://github.com/MrUniverse44/PixelMOTD/actions) | *This build can be unstable! Please report any issue!*
 
----
+<img align="center" src="https://i.imgur.com/MadbxoK.png" alt="PixelMOTD Image">
 
-<img align="center" src="https://i.imgur.com/GIDYa8z.png" alt="PixelMOTD Image">
-
-> - motds/(your motd file name).yml
-> - lang/(your lang code).yml
-> - commands.yml
-> - settings.yml
-> - events.yml
-
----
-
-Presented by:
-
-<img align="left" alt="PixelMOTD Image" src="https://i.imgur.com/jUBJjHy.png" />
