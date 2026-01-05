@@ -77,8 +77,31 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
         max    = motd.getMaxAmount(getPlugin(), online);
 
         if (motd.hasHover()) {
-            if (motd.isHoverCached()) {
-                if (motd.getHoverObject() == null) {
+            try {
+                if (motd.isHoverCached()) {
+                    if (motd.getHoverObject() == null) {
+                        List<WrappedGameProfile> array = getHoverModule().generate(
+                                motd.getHover(),
+                                setup.getUser(),
+                                online,
+                                max
+                        );
+                        if (array != null && !array.isEmpty()) {
+                            ping.setPlayers(
+                                    array
+                            );
+                            motd.setHoverObject(array);
+                        }
+                    } else {
+                        //noinspection unchecked
+                        List<WrappedGameProfile> array = (List<WrappedGameProfile>) motd.getHoverObject();
+                        if (array != null && !array.isEmpty()) {
+                            ping.setPlayers(
+                                    array
+                            );
+                        }
+                    }
+                } else {
                     List<WrappedGameProfile> array = getHoverModule().generate(
                             motd.getHover(),
                             setup.getUser(),
@@ -88,23 +111,9 @@ public class ProtocolPing extends PingBuilder<JavaPlugin, WrappedServerPing.Comp
                     ping.setPlayers(
                             array
                     );
-                    motd.setHoverObject(array);
-                } else {
-                    //noinspection unchecked
-                    ping.setPlayers(
-                        (List<WrappedGameProfile>) motd.getHoverObject()
-                    );
                 }
-            } else {
-                List<WrappedGameProfile> array = getHoverModule().generate(
-                        motd.getHover(),
-                        setup.getUser(),
-                        online,
-                        max
-                );
-                ping.setPlayers(
-                        array
-                );
+            } catch (Exception e) {
+                getLogs().error("Failed to load hover, this is a ProtocolLib Exception, please report it to their developers", e);
             }
         }
 
