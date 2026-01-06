@@ -2,7 +2,7 @@ package me.blueslime.pixelmotd.motd.platforms;
 
 import me.blueslime.pixelmotd.color.renders.VelocitySpongeRenderer;
 import me.blueslime.pixelmotd.motd.setup.MotdSetup;
-import me.blueslime.pixelmotd.motd.CachedMotd;
+import me.blueslime.pixelmotd.motd.CachedMoTD;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
@@ -28,7 +28,7 @@ public class SpongePing extends PingBuilder<Server, Favicon, ClientPingServerEve
     public void execute(ClientPingServerEvent event, MotdSetup setup) {
         ClientPingServerEvent.Response ping = event.response();
 
-        CachedMotd motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
+        CachedMoTD motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
 
         if (motd == null) {
             getLogs().debug("The plugin don't detect motds to show with this next setup:");

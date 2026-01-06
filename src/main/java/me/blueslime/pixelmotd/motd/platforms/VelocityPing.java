@@ -6,7 +6,7 @@ import com.velocitypowered.api.proxy.server.ServerPing;
 import com.velocitypowered.api.util.Favicon;
 import me.blueslime.pixelmotd.color.renders.VelocitySpongeRenderer;
 import me.blueslime.pixelmotd.motd.setup.MotdSetup;
-import me.blueslime.pixelmotd.motd.CachedMotd;
+import me.blueslime.pixelmotd.motd.CachedMoTD;
 import me.blueslime.pixelmotd.motd.MotdProtocol;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
@@ -34,7 +34,7 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
     public void execute(ProxyPingEvent event, MotdSetup setup) {
         ServerPing.Builder ping = event.getPing().asBuilder();
 
-        CachedMotd motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
+        CachedMoTD motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
 
         if (motd == null) {
             getLogs().debug("The plugin don't detect motds to show with this next setup:");

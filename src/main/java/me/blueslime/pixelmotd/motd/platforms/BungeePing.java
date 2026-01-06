@@ -3,7 +3,7 @@ package me.blueslime.pixelmotd.motd.platforms;
 import me.blueslime.pixelmotd.color.renders.BungeeRenderer;
 import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.slimelib.utils.ClassUtils;
-import me.blueslime.pixelmotd.motd.CachedMotd;
+import me.blueslime.pixelmotd.motd.CachedMoTD;
 import me.blueslime.pixelmotd.motd.MotdProtocol;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
@@ -28,7 +28,7 @@ public class BungeePing extends PingBuilder<Plugin, Favicon, ServerPing, ServerP
 
     @Override
     public void execute(ServerPing ping, MotdSetup setup) {
-        CachedMotd motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
+        CachedMoTD motd = fetchMotd(setup.getCode(), setup.getDomain(), setup.isUserBlacklisted());
 
         if (motd == null) {
             getLogs().debug("The plugin don't detect motds to show with this next setup:");

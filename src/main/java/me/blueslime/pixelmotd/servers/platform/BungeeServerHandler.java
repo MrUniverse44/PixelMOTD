@@ -20,7 +20,7 @@ public class BungeeServerHandler implements ServerHandler {
     /**
      * Get servers or worlds in the network
      *
-     * @return List(Server) Servers or Worlds Names
+     * @return List (Server) Servers or Worlds Names
      */
     @Override
     public List<Server> getServers() {
@@ -47,7 +47,7 @@ public class BungeeServerHandler implements ServerHandler {
     }
 
     /**
-     * Get the amount of servers in the network
+     * Get the number of servers in the network
      *
      * @return int Servers Size
      */

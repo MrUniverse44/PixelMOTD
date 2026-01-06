@@ -5,7 +5,7 @@ import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.pixelmotd.utils.placeholders.ConditionEvaluator;
 import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
 import me.blueslime.slimelib.logs.SlimeLogs;
-import me.blueslime.pixelmotd.motd.CachedMotd;
+import me.blueslime.pixelmotd.motd.CachedMoTD;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
 import me.blueslime.pixelmotd.motd.builder.hover.HoverModule;
@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @SuppressWarnings("unused")
 public abstract class PingBuilder<T, I, E, H> {
 
-    private final List<CachedMotd> motdList = new ArrayList<>();
+    private final List<CachedMoTD> motdList = new ArrayList<>();
     private final FaviconModule<T, I> faviconModule;
     private final HoverModule<H> hoverModule;
 
@@ -54,15 +54,15 @@ public abstract class PingBuilder<T, I, E, H> {
 
         if (motdsFile.contains("motds")) {
             for (String motdId : motdsFile.getContent("motds", false)) {
-                motdList.add(new CachedMotd(motdsFile, "motds." + motdId + "."));
+                motdList.add(new CachedMoTD(motdsFile, "motds." + motdId + "."));
             }
         }
 
         // Sort MOTDs by priority from highest to lowest.
-        motdList.sort(Comparator.comparingInt(CachedMotd::getPriority).reversed());
+        motdList.sort(Comparator.comparingInt(CachedMoTD::getPriority).reversed());
     }
 
-    public CachedMotd fetchMotd(int protocol, String domain, boolean userIsBlacklisted) {
+    public CachedMoTD fetchMotd(int protocol, String domain, boolean userIsBlacklisted) {
         // Collect all variables needed for condition evaluation.
         Map<String, Object> variables = new HashMap<>();
         variables.put("client_protocol", protocol);
@@ -90,9 +90,9 @@ public abstract class PingBuilder<T, I, E, H> {
 
         variables.put("server_events_running", eventsActive);
 
-        List<CachedMotd> evaluatedPositive = new ArrayList<>();
+        List<CachedMoTD> evaluatedPositive = new ArrayList<>();
 
-        for (CachedMotd motd : motdList) {
+        for (CachedMoTD motd : motdList) {
             if (evaluateConditions(motd, variables)) {
                 evaluatedPositive.add(motd);
             }
@@ -114,7 +114,7 @@ public abstract class PingBuilder<T, I, E, H> {
         return null;
     }
 
-    private boolean evaluateConditions(CachedMotd motd, Map<String, Object> variables) {
+    private boolean evaluateConditions(CachedMoTD motd, Map<String, Object> variables) {
         if (motd.getConditionSet().isEmpty()) {
             return true;
         }

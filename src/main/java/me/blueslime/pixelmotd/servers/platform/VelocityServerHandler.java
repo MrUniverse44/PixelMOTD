@@ -46,7 +46,7 @@ public class VelocityServerHandler implements ServerHandler {
     }
 
     /**
-     * Get the amount of servers in the network
+     * Get the number of servers in the network
      *
      * @return int Servers Size
      */

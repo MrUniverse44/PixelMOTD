@@ -125,7 +125,7 @@ public class ServerStatusChecker implements StatusChecker {
     @SuppressWarnings("deprecation")
     public void refreshStatusMap(Collection<ServerInfo> servers) {
         for (final ServerInfo server : servers) {
-            if (server.getPlayers().size() == 0) {
+            if (server.getPlayers().isEmpty()) {
                 plugin.getPlugin().getProxy().getScheduler().runAsync(plugin.getPlugin(), () -> setStatus(server, isReachable(server.getAddress())));
             } else {
                 setStatus(server, true);

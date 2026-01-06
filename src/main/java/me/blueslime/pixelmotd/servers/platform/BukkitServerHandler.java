@@ -39,7 +39,7 @@ public class BukkitServerHandler implements ServerHandler {
     }
 
     /**
-     * Get the amount of players of a specified server
+     * Get the number of players from a specified server
      *
      * @param serverName the server name
      * @return Integer
