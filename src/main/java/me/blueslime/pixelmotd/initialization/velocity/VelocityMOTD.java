@@ -10,7 +10,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.metrics.velocity.Metrics;
 import me.blueslime.pixelmotd.status.StatusChecker;
-import me.blueslime.pixelmotd.status.VelocityServerStatusChecker;
+import me.blueslime.pixelmotd.status.types.VelocityServerStatusChecker;
 import me.blueslime.slimelib.SlimePlatform;
 
 import org.slf4j.Logger;

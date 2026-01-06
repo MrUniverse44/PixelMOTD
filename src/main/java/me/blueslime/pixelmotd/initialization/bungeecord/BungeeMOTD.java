@@ -1,7 +1,7 @@
 package me.blueslime.pixelmotd.initialization.bungeecord;
 
 import me.blueslime.pixelmotd.PixelMOTD;
-import me.blueslime.pixelmotd.status.ServerStatusChecker;
+import me.blueslime.pixelmotd.status.types.BungeeServerStatusChecker;
 import me.blueslime.pixelmotd.status.StatusChecker;
 import me.blueslime.slimelib.SlimePlatform;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -11,7 +11,7 @@ public final class BungeeMOTD extends Plugin {
 
     private static BungeeMOTD bungeeMOTD;
 
-    private ServerStatusChecker checker = null;
+    private BungeeServerStatusChecker checker = null;
 
     private PixelMOTD<Plugin> instance;
 
@@ -26,7 +26,7 @@ public final class BungeeMOTD extends Plugin {
         );
 
         if (instance.getSettings().getStatus("settings.server-status.toggle")) {
-            checker = new ServerStatusChecker(instance);
+            checker = new BungeeServerStatusChecker(instance);
         }
     }
 

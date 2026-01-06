@@ -1,8 +1,9 @@
-package me.blueslime.pixelmotd.status;
+package me.blueslime.pixelmotd.status.types;
 
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
+import me.blueslime.pixelmotd.status.StatusChecker;
 import me.blueslime.slimelib.colors.platforms.velocity.DefaultSlimeColor;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.Configuration;
