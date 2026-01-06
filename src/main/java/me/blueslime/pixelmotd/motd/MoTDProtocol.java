@@ -2,22 +2,22 @@ package me.blueslime.pixelmotd.motd;
 
 import java.util.Locale;
 
-public enum MotdProtocol {
+public enum MoTDProtocol {
     ALWAYS_POSITIVE,
     ALWAYS_NEGATIVE(-1),
     DEFAULT;
 
-    MotdProtocol() {
+    MoTDProtocol() {
         code = 0;
     }
 
-    MotdProtocol(int code) {
+    MoTDProtocol(int code) {
         this.code = code;
     }
 
     private int code;
 
-    public MotdProtocol setCode(int code) {
+    public MoTDProtocol setCode(int code) {
         this.code = code;
         return this;
     }
@@ -27,12 +27,12 @@ public enum MotdProtocol {
     }
 
     @Deprecated
-    public static MotdProtocol getFromText(String paramText, int code) {
+    public static MoTDProtocol getFromText(String paramText, int code) {
         return fromString(paramText, code);
     }
 
-    public static MotdProtocol fromOther(MotdProtocol protocol) {
-        for (MotdProtocol p : values()) {
+    public static MoTDProtocol fromOther(MoTDProtocol protocol) {
+        for (MoTDProtocol p : values()) {
             if (p == protocol) {
                 return p;
             }
@@ -40,7 +40,7 @@ public enum MotdProtocol {
         return protocol;
     }
 
-    public static MotdProtocol fromObject(Object object, int code) {
+    public static MoTDProtocol fromObject(Object object, int code) {
         if (object instanceof String) {
             return fromString(
                     (String)object,
@@ -56,20 +56,15 @@ public enum MotdProtocol {
         return DEFAULT.setCode(code);
     }
 
-    public static MotdProtocol fromInteger(int parameter, int code) {
-        switch (parameter) {
-            default:
-            case -1:
-            case 0:
-                return DEFAULT.setCode(code);
-            case 1:
-                return ALWAYS_POSITIVE.setCode(code);
-            case 2:
-                return ALWAYS_NEGATIVE;
-        }
+    public static MoTDProtocol fromInteger(int parameter, int code) {
+        return switch (parameter) {
+            case 1 -> ALWAYS_POSITIVE.setCode(code);
+            case 2 -> ALWAYS_NEGATIVE;
+            default -> DEFAULT.setCode(code);
+        };
     }
 
-    public static MotdProtocol fromString(String paramText, int code) {
+    public static MoTDProtocol fromString(String paramText, int code) {
         paramText = paramText.toLowerCase(Locale.ENGLISH);
 
         return switch (paramText) {

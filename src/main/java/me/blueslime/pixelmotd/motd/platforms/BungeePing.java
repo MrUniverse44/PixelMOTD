@@ -4,7 +4,7 @@ import me.blueslime.pixelmotd.color.renders.BungeeRenderer;
 import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.slimelib.utils.ClassUtils;
 import me.blueslime.pixelmotd.motd.CachedMoTD;
-import me.blueslime.pixelmotd.motd.MotdProtocol;
+import me.blueslime.pixelmotd.motd.MoTDProtocol;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
@@ -103,12 +103,12 @@ public class BungeePing extends PingBuilder<Plugin, Favicon, ServerPing, ServerP
             }
         }
 
-        MotdProtocol protocol = MotdProtocol.fromOther(
+        MoTDProtocol protocol = MoTDProtocol.fromOther(
                 motd.getModifier()
         ).setCode(setup.getCode());
 
-        if (protocol != MotdProtocol.DEFAULT) {
-            if (protocol != MotdProtocol.ALWAYS_NEGATIVE) {
+        if (protocol != MoTDProtocol.DEFAULT) {
+            if (protocol != MoTDProtocol.ALWAYS_NEGATIVE) {
                 ping.getVersion().setProtocol(setup.getCode());
             } else {
                 ping.getVersion().setProtocol(-1);

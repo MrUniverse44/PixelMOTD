@@ -7,7 +7,7 @@ import com.velocitypowered.api.util.Favicon;
 import me.blueslime.pixelmotd.color.renders.VelocitySpongeRenderer;
 import me.blueslime.pixelmotd.motd.setup.MotdSetup;
 import me.blueslime.pixelmotd.motd.CachedMoTD;
-import me.blueslime.pixelmotd.motd.MotdProtocol;
+import me.blueslime.pixelmotd.motd.MoTDProtocol;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.motd.builder.PingBuilder;
 import me.blueslime.pixelmotd.motd.builder.favicon.FaviconModule;
@@ -119,11 +119,11 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
             }
         }
 
-        MotdProtocol protocol = MotdProtocol.fromOther(
+        MoTDProtocol protocol = MoTDProtocol.fromOther(
                 motd.getModifier()
         );
 
-        if (protocol != MotdProtocol.ALWAYS_NEGATIVE) {
+        if (protocol != MoTDProtocol.ALWAYS_NEGATIVE) {
             protocol = protocol.setCode(setup.getCode());
         }
 
@@ -138,7 +138,7 @@ public class VelocityPing extends PingBuilder<ProxyServer, Favicon, ProxyPingEve
             )
         );
 
-        if (protocol != MotdProtocol.DEFAULT) {
+        if (protocol != MoTDProtocol.DEFAULT) {
             p1 = protocol.getCode();
         }
 

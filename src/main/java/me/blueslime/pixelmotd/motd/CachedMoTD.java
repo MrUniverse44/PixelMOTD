@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public class CachedMoTD {
 
     private final ConfigurationHandler configuration;
-    private final MotdProtocol specifiedProtocol;
+    private final MoTDProtocol specifiedProtocol;
     private final String protocol;
     private final Set<String> conditionSet;
     private final String pathKey;
@@ -36,7 +36,7 @@ public class CachedMoTD {
         this.pathKey = Verifier.requireNonNull(pathKey, "pathKey");
 
         // Load and sanitize displayed protocol data
-        MotdProtocol protocolModifier = MotdProtocol.fromObject(
+        MoTDProtocol protocolModifier = MoTDProtocol.fromObject(
                 this.configuration.get(pathKey + "server-displayed-protocol.modifier", "1"),
                 0
         );
@@ -100,7 +100,7 @@ public class CachedMoTD {
      *
      * @return MoTD Protocol instance (never null)
      */
-    public MotdProtocol getModifier() {
+    public MoTDProtocol getModifier() {
         return specifiedProtocol;
     }
 

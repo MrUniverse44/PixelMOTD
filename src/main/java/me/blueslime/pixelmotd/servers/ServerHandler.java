@@ -11,7 +11,7 @@ public interface ServerHandler {
 
     /**
      * Get servers or worlds in the network
-     * @return List(Server) Servers or Worlds Names
+     * @return List (Server) Servers or Worlds Names
      */
     List<Server> getServers();
 
@@ -21,8 +21,8 @@ public interface ServerHandler {
      */
     default int getServerUsers(String serverName) {
         for (Server server : getServers()) {
-            if (server.getName().equalsIgnoreCase(serverName)) {
-                return server.getOnline();
+            if (server.name().equalsIgnoreCase(serverName)) {
+                return server.online();
             }
         }
         return 0;

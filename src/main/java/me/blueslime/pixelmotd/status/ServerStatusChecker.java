@@ -22,11 +22,10 @@ import java.util.concurrent.TimeUnit;
  */
 @SuppressWarnings("unused")
 public class ServerStatusChecker implements StatusChecker {
-    private final PixelMOTD<Plugin> plugin;
 
+    private final Map<String, Boolean> statusMap = new ConcurrentHashMap<>();
     private final List<ScheduledTask> pingTask = new ArrayList<>();
-
-    private Map<String, Boolean> statusMap = new ConcurrentHashMap<>();
+    private final PixelMOTD<Plugin> plugin;
 
     private ConfigurationHandler control;
 
@@ -153,7 +152,7 @@ public class ServerStatusChecker implements StatusChecker {
     }
 
     public void stop() {
-        statusMap = new ConcurrentHashMap<>();
+        statusMap.clear();
         Iterator<ScheduledTask> taskIt = pingTask.iterator();
         while(taskIt.hasNext()) {
             taskIt.next().cancel();

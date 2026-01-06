@@ -10,8 +10,8 @@ import java.util.List;
 public interface PlayerHandler {
 
     /**
-     * Get names of all players
-     * @return List(String) Players Names
+     * Get the names of all players
+     * @return List (String) Players Names
      */
     List<String> getPlayersNames();
 
@@ -29,13 +29,13 @@ public interface PlayerHandler {
     }
 
     /**
-     * Get the amount of players online in the server
+     * Get the number of players online in the server
      * @return int Players Size
      */
     int getPlayersSize();
 
     /**
-     * Get the amount of max players in the server
+     * Get the number of max players in the server
      * @return int Max players size
      */
     int getMaxPlayers();

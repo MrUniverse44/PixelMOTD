@@ -147,12 +147,12 @@ public class PluginPlaceholders {
             }
 
             for (Server server : plugin.getServerHandler().getServers()) {
-                message = message.replace("%online_" + server.getName() + "%", server.getOnline() + "");
+                message = message.replace("%online_" + server.name() + "%", server.online() + "");
 
                 if (checker != null) {
                     message = message.replace(
-                            "%status_" + server.getName() + "%",
-                            checker.getServerStatus(server.getName())
+                            "%status_" + server.name() + "%",
+                            checker.getServerStatus(server.name())
                     );
                 }
             }
@@ -423,8 +423,8 @@ public class PluginPlaceholders {
     private int getOnlineByNames(List<Server> serverList, List<String> values) {
         int count = 0;
         for (Server server : serverList) {
-            if (values.contains(server.getName())) {
-                count = count + server.getOnline();
+            if (values.contains(server.name())) {
+                count = count + server.online();
             }
         }
         return count;
@@ -440,8 +440,8 @@ public class PluginPlaceholders {
 
     private int containServer(Server server,List<String> values) {
         for (String value : values) {
-            if (server.getName().contains(value)) {
-                return server.getOnline();
+            if (server.name().contains(value)) {
+                return server.online();
             }
         }
         return 0;
