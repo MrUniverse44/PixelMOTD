@@ -1,13 +1,12 @@
 package me.blueslime.pixelmotd.listener.bukkit.player;
 
+import me.blueslime.pixelmotd.color.renders.SpigotStringRenderer;
 import me.blueslime.pixelmotd.listener.bukkit.BukkitListener;
 import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.listener.type.BukkitPluginListener;
 import me.blueslime.pixelmotd.utils.ListType;
 import me.blueslime.pixelmotd.utils.ListUtil;
-import me.blueslime.pixelmotd.utils.color.BungeeHexUtil;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -90,9 +89,8 @@ public class PlayerLoginListener extends BukkitPluginListener implements Listene
     }
 
     public String colorize(String message) {
-        return ChatColor.translateAlternateColorCodes(
-                '&',
-                BungeeHexUtil.convert(message)
+        return SpigotStringRenderer.create(
+            message
         );
     }
 }

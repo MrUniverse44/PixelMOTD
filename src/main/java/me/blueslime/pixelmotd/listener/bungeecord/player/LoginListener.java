@@ -1,13 +1,12 @@
 package me.blueslime.pixelmotd.listener.bungeecord.player;
 
+import me.blueslime.pixelmotd.color.renders.SpigotStringRenderer;
 import me.blueslime.pixelmotd.listener.bungeecord.BungeeListener;
 import me.blueslime.slimelib.file.configuration.ConfigurationHandler;
 import me.blueslime.pixelmotd.PixelMOTD;
 import me.blueslime.pixelmotd.listener.type.BungeePluginListener;
 import me.blueslime.pixelmotd.utils.ListType;
 import me.blueslime.pixelmotd.utils.ListUtil;
-import me.blueslime.pixelmotd.utils.color.BungeeHexUtil;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.PendingConnection;
 import net.md_5.bungee.api.event.LoginEvent;
@@ -98,12 +97,9 @@ public class LoginListener extends BungeePluginListener {
 
     public TextComponent colorize(String message) {
         return new TextComponent(
-                ChatColor.translateAlternateColorCodes(
-                        '&',
-                        BungeeHexUtil.convert(
-                                message
-                        )
-                )
+            SpigotStringRenderer.create(
+                message
+            )
         );
     }
 }
