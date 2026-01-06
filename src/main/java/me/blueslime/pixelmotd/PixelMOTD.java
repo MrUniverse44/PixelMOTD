@@ -22,7 +22,6 @@ import me.blueslime.pixelmotd.utils.logger.LoggerSetup;
 import me.blueslime.pixelmotd.utils.placeholders.PluginPlaceholders;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +50,6 @@ public class PixelMOTD<T> implements SlimePlugin<T> {
     private final SlimeLogs logs;
 
     private final File folder;
-    private final File motds;
 
     private final File lang;
 
@@ -99,7 +97,6 @@ public class PixelMOTD<T> implements SlimePlugin<T> {
             logs.info("&fUpdater has been disabled for now...");
         }
 
-        this.motds = new File(dataFolder, "motds");
         this.lang = new File(dataFolder, "lang");
 
         if (!lang.exists() && lang.mkdirs()) {
@@ -118,26 +115,6 @@ public class PixelMOTD<T> implements SlimePlugin<T> {
                     );
                 } catch (Exception ignored) { }
                 loadMessageFile("cz", "en", "it", "de", "es", "jp", "pl", "zh_CN", "zh_TW", "he_IL", "id", "ko");
-            }
-        }
-
-        if (!motds.exists() && motds.mkdirs()) {
-            loadMotdFile("one", "two", "three", "four", "five", "six");
-        } else {
-            File[] files = motds.listFiles((dir, name) -> name.contains("server_motds"));
-
-            if (files != null && files.length >= 1) {
-                try {
-                    FileUtilities.copy(
-                            motds,
-                            new File(
-                                    getDataFolder(),
-                                    "backup-motds"
-                            ),
-                            true
-                    );
-                } catch (IOException ignored) {}
-                loadMotdFile("one", "two", "three", "four", "five", "six");
             }
         }
 
@@ -210,17 +187,6 @@ public class PixelMOTD<T> implements SlimePlugin<T> {
         }
     }
 
-    private void loadMotdFile(String... files) {
-        for (String file : files) {
-            FileUtilities.load(
-                    logs,
-                    motds,
-                    file + ".yml",
-                    "/motds/" + file + ".yml"
-            );
-        }
-    }
-
     public ConfigurationHandler getCommandSettings() {
         return getConfigurationHandler(Configuration.COMMANDS);
     }
@@ -234,10 +200,6 @@ public class PixelMOTD<T> implements SlimePlugin<T> {
 
     public PluginPlaceholders getPlaceholders() {
         return placeholders;
-    }
-
-    public File getMotdFolder() {
-        return motds;
     }
 
     private void exception() {
